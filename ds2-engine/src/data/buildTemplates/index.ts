@@ -5,12 +5,21 @@ import {
   getAllBuildTemplatesFromRegistry,
   isBuildTemplateReady,
   isFullGuideBuild,
+  isHandcraftedBuild,
+  countHandwrittenComplete,
+  getNextGeneratedBuildId,
 } from "./fromGenerated";
 
 export type { BuildTemplate, StartingClass } from "./types";
 export { CLASS_BASE_STATS } from "./types";
 export { generateLevelRoadmap, STARTING_SL } from "./levelGenerator";
-export { isBuildTemplateReady, isFullGuideBuild };
+export {
+  isBuildTemplateReady,
+  isFullGuideBuild,
+  isHandcraftedBuild,
+  countHandwrittenComplete,
+  getNextGeneratedBuildId,
+};
 
 export const BUILD_TEMPLATE_IDS = ALL_BUILD_TEMPLATES.map((t) => t.id) as readonly string[];
 

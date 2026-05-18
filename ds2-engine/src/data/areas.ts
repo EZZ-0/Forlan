@@ -96,6 +96,8 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
         { id: "mj12c", text: "Human Effigy", items: ["Human Effigy"] },
         { id: "mj12d", text: "Homeward Bone", items: ["Homeward Bone"] },
       ]),
+      item("mj19", "Straid / Ornifex (Majula): Moonlight Greatsword (Old Paledrake Soul), boss weapons", "item"),
+      item("mj20", "Chime of Want — Ornifex (Nashandra soul, after final boss)", "item"),
     ],
   },
   forest_of_fallen_giants: {
@@ -189,6 +191,8 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       ]),
       item("lb14", "Bracing Knuckle Ring +1 (explosive barrel area)", "item"),
       item("lb15", "Pharros/Servants' Quarters: hidden path → Great Lightning Spear, Olenford's Staff", "item", null, ["pharros", "illusory"]),
+      item("lb17", "Large Club — corpse in room below Straith Exile bonfire (after Ruin Sentinels)", "item"),
+      item("lb18", "Crystal Soul Spear — Straid or Ornifex (needs second Old Paledrake Soul: NG+ Freja or Bonfire Ascetic)", "item", null, ["spell:sorcery"]),
     ],
   },
   huntsmans_copse: {
@@ -206,6 +210,9 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("hc9", "Undead Purgatory → BOSS: EXECUTIONER'S CHARIOT — hit lever to stop chariot", "boss"),
       item("hc10", "Brotherhood of Blood covenant (Titchy Gren, after Chariot)", "npc", null, ["covenant:brotherhood_of_blood"]),
       item("hc11", "Illusory (press A/X): Bridge Approach cave — mushrooms to bottom, corner opposite chest → Royal Soldier's Ring, souls, Crystal Lizard", "item", null, ["illusory", "crystal_lizard"]),
+      item("hc12", "Clear Bluestone Ring +2 — Skeleton Lords boss (NG+ or Bonfire Ascetic on Undead Purgatory)", "item"),
+      item("hc13", "Notched Whip — corpse on ledge above Bridge Approach bonfire", "item"),
+      item("hc14", "Dark Orb — Felkin vendor (8 INT + 8 FTH base to shop)", "item", null, ["spell:hex"]),
     ],
   },
   harvest_valley: {
@@ -257,6 +264,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("ik10", "Light Primal Bonfire", "bonfire"),
       item("ik11", "Belfry Sol — Pharros wall in Iron Keep. Bell Keeper area", "key", null, ["pharros"]),
       item("ik12", "Life Ring +1 (illusory: room right of flaming bull, right wall)", "item", null, ["illusory"]),
+      item("ik14", "Flame Weapon pyromancy — chest near Smelter Demon fog gate", "item", null, ["spell:pyromancy"]),
       item("ik13", "Illusory: Belfry Sol return — walls on right before bonfire jump", "item", null, ["illusory"], [
         { id: "ik13a", text: "Grand Spirit Tree Shield", items: ["Grand Spirit Tree Shield"] },
         { id: "ik13b", text: "Protective Chime", items: ["Protective Chime"] },
@@ -273,6 +281,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("pt3", "Pharros Lockstones: reveal walls/traps throughout", "item"),
       item("pt4", "BOSS: ROYAL RAT VANGUARD — kill the mohawk rat", "boss"),
       item("pt5", "Talk to Rat King → join Rat King covenant", "npc", null, ["covenant:rat_king"]),
+      item("pt6", "Old Whip — rare drop from Grave of Saints rats (Company of Champions farm)", "item"),
     ],
   },
   the_gutter: {
@@ -284,6 +293,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("gt3", "Fragrant Branch of Yore (on corpse)", "item", null, ["branch"]),
       item("gt4", "Dark Pyromancy Flame (hidden path)", "item"),
       item("gt5", "Navigate the wooden maze carefully → leads to Black Gulch", "key"),
+      item("gt6", "Great Club — chest before Black Gulch entrance (ladder down in Gutter)", "item"),
     ],
   },
   black_gulch: {
@@ -318,6 +328,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("sw9", "Estus Flask Shard — in the ruins area", "item", null, ["estus:7"]),
       item("sw10", "Use Branch on Lion Warrior for Fang Key access", "item", null, ["branch"]),
       item("sw11", "Three-path fork: Left=fog/Vengarl, Straight=Pharros/Tseldora, Right=Shrine of Winter", "key"),
+      item("sw12", "Spotted Whip — corpse in Shaded Woods (poison status whip)", "item"),
     ],
   },
   doors_of_pharros: {
@@ -355,6 +366,9 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("bc9", "Light Primal Bonfire", "bonfire"),
       item("bc10", "Brightstone Key → Lord's Private Chamber: Great Lightning Spear, Fire Tempest", "key", null, ["spell:miracle", "spell:pyromancy"]),
       item("bc11", "Kill Vengarl's Body → return to Head in Shaded Woods → gear + War Cry gesture", "item", null, ["gesture:war_cry"]),
+      item("bc15", "Southern Ritual Band — corpse in spider halls (Tseldora)", "item"),
+      item("bc18", "Flynn's Ring — hidden chest (light armor / low equip load builds)", "item"),
+      item("bc19", "★ Freja soul #2: NG+ Duke's Dear Freja or Bonfire Ascetic — Crystal Soul Spear if MLGS used first soul", "warn"),
     ],
   },
   sinners_rise: {
@@ -414,6 +428,9 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("uc6", "Enter Vendrick's chamber — pick up King's Ring", "key"),
       item("uc7", "Vendrick walks around hollow — need Giant Souls to fight him later (each halves defense)", "npc"),
       item("uc8", "Return to Agdayne with King's Ring → Darkdrift katana + Agdayne's Set", "npc"),
+      item("uc10", "Penal Handcuffs — corpse in corridor before Velstadt (+7.5% pyromancy damage)", "item"),
+      item("uc11", "Blue Flame — Leydia Pyromancer drop (farm with Company of Champions)", "item"),
+      item("uc12", "Royal Soldier Ring +2 — Vendrick NG+ (collect Giant Souls first)", "item"),
     ],
   },
   aldias_keep: {
@@ -431,6 +448,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("ak6", "Talk to Aldia at bonfire (affects ending)", "npc"),
       item("ak7", "Navlaan (behind barrier) — talk while HOLLOW for assassination quests. Do NOT pull lever while human", "npc"),
       item("ak8", "BOSS: GUARDIAN DRAGON — ranged helps. Leads to Dragon Aerie", "boss"),
+      item("ak12", "Forbidden Sun — Navlaan (pull lever while hollow for assassination shop)", "item", null, ["spell:pyromancy"]),
     ],
   },
   dragon_aerie: {
@@ -446,6 +464,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("da6", "Talk to Ancient Dragon → Ashen Mist Heart (DON'T fight him yet)", "npc"),
       item("da7", "Estus Flask Shard — chest", "item", null, ["estus:12"]),
       item("da8", "Optional: BOSS: ANCIENT DRAGON — huge HP, one-shot fire. Drops Soul of a Giant", "boss"),
+      item("da10", "Third Dragon Ring — chest in Dragon Shrine corridor before Ancient Dragon fog", "item"),
     ],
   },
   memories: {
@@ -478,7 +497,9 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
     name: "Throne of Want (Endgame)",
     lvl: "110–120",
     items: [
-      item("tw1", "BOSS: THRONE WATCHER & DEFENDER — kill close together or they revive", "boss"),
+      item("tw1", "BOSS: THRONE WATCHER & DEFENDER — kill close together or they revive. Ring of Blades +2 (NG+)", "boss"),
+      item("tw7", "Ring of Blades +2 — Throne Watcher & Defender drop (NG+ or Ascetic)", "item"),
+      item("tw8", "Defender Greatsword — Ornifex (Throne Defender soul)", "item"),
       item("tw2", "Summon Benhart — sign right of fog gate. MUST SURVIVE (questline!)", "boss", "benhart_boss:throne"),
       item("tw3", "BOSS: NASHANDRA — final boss. Bring curse-curing items", "boss"),
       item("tw4", "BOSS: ALDIA (if all dialogue exhausted) — alternate ending available", "boss"),
@@ -498,6 +519,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("d16", "BOSS: ELANA, THE SQUALID QUEEN — summons Velstadt phantom", "boss"),
       item("d17", "BOSS: SINH, THE SLUMBERING DRAGON — destroys weapon durability, bring backups", "boss"),
       item("d18", "Optional BOSS: GRAVEROBBER, VARG & CERAH — 3-NPC gank, extremely hard", "boss"),
+      item("d111", "Dark Clutch Ring — Crown of the Sunken King (Shulva)", "item"),
     ],
   },
   dlc_iron: {
@@ -532,6 +554,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("d311", "Optional: Lucatiel summon in Grand Cathedral (if Aldia's Keep dialogue done)", "boss", "lucatiel_boss:ivory_king"),
       item("d312", "Optional BOSS: LUD & ZALLEN — Frigid Outskirts. The run IS the boss", "boss"),
       item("d313", "Soul Flash sorcery, Blizzard sorcery", "item", null, ["spell:sorcery", "spell:sorcery"]),
+      item("d316", "Chloranthy Ring +2 — Frozen Eleum Loyce (Ivory King DLC)", "item"),
     ],
   },
 };

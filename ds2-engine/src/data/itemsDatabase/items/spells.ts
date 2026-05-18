@@ -186,7 +186,7 @@ export const DB_SPELLS: ItemDatabaseEntry[] = [
       warning: "Pulling the lever spawns Navlaan and locks some quests. Consider consequences.",
       sources: [{ type: "vendor", location: "Navlaan (Aldia's Keep)", detail: "Pull lever to spawn", unlock: "Aldia's Keep" }],
     },
-    buildRelevance: { "inferno-reaper": { phase: 2, role: "High damage nuke", progressId: "ir:forbidden_sun" } },
+    buildRelevance: { "inferno-reaper": { phase: 2, role: "High damage nuke", progressId: "ak12" } },
     rarity: "unique",
     dlc: "base",
     source: "manual",

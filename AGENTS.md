@@ -2,9 +2,11 @@
 
 This project uses a **multi-agent workflow** for large updates. The orchestrator (Cursor/Composer) initiates subagents via `mcp_task` to work on parallel tracks.
 
-## Master Plan
+## Master Plans
 
-**[.cursor/plans/ds2_merged_multi_agent_workflow.plan.md](.cursor/plans/ds2_merged_multi_agent_workflow.plan.md)**
+**Hand-written builds (one build per session):** [.cursor/plans/handwritten_builds_execution.plan.md](.cursor/plans/handwritten_builds_execution.plan.md) — tracker: `ds2-engine/src/data/buildTemplates/handwrittenBuildStatus.ts` (3/21 complete).
+
+**Database + UI merge:** [.cursor/plans/ds2_merged_multi_agent_workflow.plan.md](.cursor/plans/ds2_merged_multi_agent_workflow.plan.md)
 
 Merges:
 1. **Weapons, Upgrades & Infusion Guides** — Build tab expansion, Arsenal cards, BUILD GEAR
@@ -20,7 +22,13 @@ Merges:
 | D | UI Integration | B, C | App.tsx (Arsenal, Upgrades, Infusion tabs; BUILD GEAR) |
 | E | Docs | A, B, C | Walkthrough + ENGINE_CONTEXT |
 
-## Initiation
+## Initiation — Hand-written builds
+
+> **"Hand-write build #3 Destroyer"** or **"Continue handwritten builds plan"**
+
+Uses the A–Z queue in `handwrittenBuildStatus.ts`. One build per session recommended.
+
+## Initiation — Multi-agent merge
 
 To execute the full workflow, say:
 

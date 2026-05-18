@@ -23,9 +23,9 @@ const PROGRESS_TO_ITEMS: Record<string, string[]> = {
   // Rings
   fg15: ["ring_of_blades"],
   fg21: ["chloranthy_ring"],
-  "build:southern_ritual": ["southern_ritual_band"],
-  "build:third_dragon": ["third_dragon_ring"],
-  "build:dark_clutch": ["dark_clutch_ring"],
+  "bc15": ["southern_ritual_band"],
+  "da10": ["third_dragon_ring"],
+  "d111": ["dark_clutch_ring"],
   // Spells
   hc3: ["dark_orb"],
   "build:dark_weapon": ["dark_weapon"],

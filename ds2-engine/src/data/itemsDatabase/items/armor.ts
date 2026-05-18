@@ -74,7 +74,7 @@ export const DB_ARMOR: ItemDatabaseEntry[] = [
       howToGetThere: "Reach Undead Crypt. Corpse in corridor before Velstadt.",
       howToObtain: "Pick up from corpse.",
     },
-    buildRelevance: { "inferno-reaper": { phase: 3, role: "+7.5% pyromancy damage", progressId: "ir:penal_handcuffs" } },
+    buildRelevance: { "inferno-reaper": { phase: 3, role: "+7.5% pyromancy damage", progressId: "uc10" } },
     rarity: "unique",
     dlc: "base",
     source: "manual",

@@ -44,15 +44,15 @@ export const BUILD_STEPS: BuildStep[] = [
   { id: "build:19", progressId: "build:uchigatana_10", name: "Uchigatana +10", areaId: "lost_bastille", phase: 4, type: "upgrade", source: "McDuff / Lenigrast" },
   { id: "build:20", progressId: "build:dark_uchigatana", name: "Dark Uchigatana infused", areaId: "lost_bastille", phase: 4, type: "infusion", source: "McDuff" },
   // Phase 5 — Rings, spells
-  { id: "build:21", progressId: "build:southern_ritual", name: "Southern Ritual Band", areaId: "brightstone_cove", phase: 5, type: "ring", source: "Brightstone Cove" },
+  { id: "build:21", progressId: "bc15", name: "Southern Ritual Band", areaId: "brightstone_cove", phase: 5, type: "ring", source: "Brightstone Cove" },
   { id: "build:22", progressId: "sa3", name: "Sunlight Blade", areaId: "shrine_of_amana", phase: 5, type: "spell", source: "Chest (hidden path)" },
   { id: "build:23", progressId: "ch6", name: "Resonant Soul", areaId: "dark_chasm", phase: 5, type: "spell", source: "Grandahl (Pilgrims Rank 1)" },
   { id: "build:23b", progressId: "build:great_resonant_soul", name: "Great Resonant Soul", areaId: "dark_chasm", phase: 5, type: "spell", source: "Grandahl (Pilgrims Rank 2)", detail: "Higher damage than Resonant Soul" },
   // Phase 6 — End build
-  { id: "build:24", progressId: "build:third_dragon", name: "Third Dragon Ring", areaId: "dragon_aerie", phase: 6, type: "ring", source: "Dragon Shrine" },
+  { id: "build:24", progressId: "da10", name: "Third Dragon Ring", areaId: "dragon_aerie", phase: 6, type: "ring", source: "Dragon Shrine" },
   { id: "build:25", progressId: "build:staff_of_wisdom", name: "Staff of Wisdom", areaId: "dragon_aerie", phase: 6, type: "catalyst", source: "Ornifex trade (Freja soul) / crystal lizard" },
   { id: "build:26", progressId: "build:staff_wisdom_5", name: "Staff of Wisdom +5", areaId: "dragon_aerie", phase: 6, type: "upgrade", source: "Twinkling Titanite" },
-  { id: "build:27", progressId: "build:dark_clutch", name: "Dark Clutch Ring", areaId: "dlc_sunken", phase: 6, type: "ring", source: "DLC (any crown)" },
+  { id: "build:27", progressId: "d111", name: "Dark Clutch Ring", areaId: "dlc_sunken", phase: 6, type: "ring", source: "DLC (any crown)" },
 ];
 
 export function getBuildStepsForArea(areaId: AreaId, buildSteps?: BuildStep[]): BuildStep[] {
