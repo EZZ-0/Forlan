@@ -1,8 +1,10 @@
 import type { BuildTemplate } from "./types";
+import type { BuildStep } from "../buildChecklist";
 import raw from "./generated/buildData.json";
 import { darkMeleeHexer } from "./darkMeleeHexer";
 import { darkChaosAssassin } from "./darkChaosAssassin";
 import { infernoReaper } from "./infernoReaper";
+import { linkBuildSteps } from "./linkBuildSteps";
 
 /** Hand-tuned templates override PDF-generated data */
 const OVERRIDES: Record<string, BuildTemplate> = {
@@ -12,7 +14,8 @@ const OVERRIDES: Record<string, BuildTemplate> = {
 };
 
 function enrichTemplate(b: BuildTemplate): BuildTemplate {
-  const buildSteps = b.buildSteps ?? [];
+  const rawSteps = (b.buildSteps ?? []) as BuildStep[];
+  const buildSteps = linkBuildSteps(rawSteps);
   let buildItems = b.buildItems ?? [];
   if (buildItems.length === 0 && b.weapons?.length) {
     buildItems = b.weapons.map((w) => ({
