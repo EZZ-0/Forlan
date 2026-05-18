@@ -4,12 +4,13 @@ import {
   getBuildTemplateFromRegistry,
   getAllBuildTemplatesFromRegistry,
   isBuildTemplateReady,
+  isFullGuideBuild,
 } from "./fromGenerated";
 
 export type { BuildTemplate, StartingClass } from "./types";
 export { CLASS_BASE_STATS } from "./types";
 export { generateLevelRoadmap, STARTING_SL } from "./levelGenerator";
-export { isBuildTemplateReady };
+export { isBuildTemplateReady, isFullGuideBuild };
 
 export const BUILD_TEMPLATE_IDS = ALL_BUILD_TEMPLATES.map((t) => t.id) as readonly string[];
 

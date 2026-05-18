@@ -2137,6 +2137,7 @@ function BuildView({
               <option key={t.id} value={t.id}>
                 {t.name}
                 {total > 0 ? ` — ${pct}% levels` : ""}
+                {t.buildSteps.length > 0 ? " · Full guide" : ""}
               </option>
             );
           })}
