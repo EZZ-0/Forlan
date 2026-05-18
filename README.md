@@ -1,146 +1,189 @@
 # Dark Souls 2 — 100% Progression Engine
 
-A free checklist app for **Dark Souls 2: Scholar of the First Sin**. Use it on your phone or PC while you play. Tick off items, track quests, follow a build guide, and see what you might miss.
+A free checklist you open in your web browser while you play **Dark Souls 2: Scholar of the First Sin**.
 
-This is a **fan-made tool**. It is not made by or connected to FromSoftware or Bandai Namco.
+Tick off items, track quests, follow a build guide, and see what you might miss.
 
----
+**Fan-made tool** — not official, not made by FromSoftware or Bandai Namco.
 
-## What you need on your computer
-
-1. **Node.js** (version 18 or newer)  
-   Download from [https://nodejs.org](https://nodejs.org) if you do not have it. Pick the “LTS” installer.
-
-2. **This project folder**  
-   Either download a ZIP from GitHub, or clone the repo (see below).
-
-You do **not** need an account inside the app. It runs on your machine in the browser.
+**Get the project:** [https://github.com/EZZ-0/Forlan](https://github.com/EZZ-0/Forlan)
 
 ---
 
-## How to start the app (easiest way)
+## Before you start (one-time setup)
 
-Open a terminal (Command Prompt or PowerShell on Windows, Terminal on Mac/Linux).
+You need two things on your computer:
 
-Go into the project folder, then run:
+### 1. Install Node.js (lets the app run)
 
-```bash
+1. Go to [https://nodejs.org](https://nodejs.org)
+2. Click the big green **LTS** download button
+3. Run the installer — keep clicking **Next** until it finishes
+
+You only do this once.
+
+### 2. Download this project onto your computer
+
+Pick **one** way below.
+
+#### Way A — Download ZIP (easiest, no extra programs)
+
+1. Open [https://github.com/EZZ-0/Forlan](https://github.com/EZZ-0/Forlan)
+2. Click the green **Code** button
+3. Click **Download ZIP**
+4. Unzip the file (right-click → **Extract All** on Windows)
+5. Remember where the folder is — it will be called **Forlan**
+
+#### Way B — Using Git (if you already use Git)
+
+Open **Command Prompt** or **PowerShell**, then type these lines **one at a time**. Press **Enter** after each line and wait until it finishes.
+
+```
+git clone https://github.com/EZZ-0/Forlan.git
+```
+
+```
+cd Forlan
+```
+
+That creates a **Forlan** folder with everything inside.
+
+---
+
+## How to open the engine (first time)
+
+### Step 1 — Open a terminal
+
+**Windows**
+
+1. Press the **Windows** key
+2. Type `cmd` or `powershell`
+3. Press **Enter**
+
+**Mac**
+
+1. Open **Terminal** from Applications → Utilities
+
+### Step 2 — Go into the project folder
+
+Type this (change the path if your folder is somewhere else), then press **Enter**:
+
+**Windows example** (if you unzipped to Downloads):
+
+```
+cd C:\Users\YourName\Downloads\Forlan
+```
+
+**Tip:** In File Explorer, open your **Forlan** folder, click the address bar at the top, copy the path, then type `cd ` and paste it.
+
+### Step 3 — Start the app
+
+Type this and press **Enter**:
+
+```
 npm start
 ```
 
-The first time, this installs a few packages (may take a minute). Then it opens a local website.
+- The **first time**, it may take 1–2 minutes (it is downloading small support files). That is normal.
+- When you see a line like `Local: http://localhost:5173`, it is ready.
 
-Open your browser and go to:
+### Step 4 — Open it in your browser
 
-**http://localhost:5173**
+1. Open **Chrome**, **Edge**, or **Firefox**
+2. In the address bar, type:
 
-To stop the app, press `Ctrl+C` in the terminal.
-
-### If `npm start` does not work
-
-Try these steps one at a time:
-
-```bash
-cd ds2-engine
-npm install
-npm run dev
+```
+http://localhost:5173
 ```
 
-Then open **http://localhost:5173** in your browser.
+3. Press **Enter**
+
+You should see the DS2 checklist app. Leave the black terminal window open while you play.
+
+### Step 5 — When you are done playing
+
+1. Click the terminal window
+2. Press **Ctrl** and **C** at the same time
+
+That stops the app. Your checkboxes are still saved in the browser for next time.
 
 ---
 
-## What the app does
+## How to open it again (next day, next session)
 
-| Tab | What it is for |
-|-----|----------------|
-| **Overview** | How far you are through the run, warnings, quick links |
-| **Areas** | Checklists for each area in walkthrough order |
-| **Quests** | NPC questlines (Lucatiel, Benhart, and others) |
-| **Trackers** | Gestures, covenants, Estus shards, bone dust |
-| **Build** | Level-up roadmaps and gear lists (many builds to pick from) |
-| **Farming** | Where to farm souls and upgrade materials |
-| **Items** | Boss souls, secret walls, shop unlocks, item search |
-| **Enemies** | Weaknesses and drop info |
-| **Simulator** | Try stats and gear on paper |
-| **Get OP** | Extra tips (paths, leveling, etc.) |
+You do **not** need to download everything again.
 
-Checking a box in an **area** can also tick related **quest** steps automatically.
+1. Open terminal (same as before)
+2. Go to the **Forlan** folder again:
+
+```
+cd C:\Users\YourName\Downloads\Forlan
+```
+
+(use your real path)
+
+3. Start it:
+
+```
+npm start
+```
+
+4. Browser → `http://localhost:5173`
+
+That is it.
 
 ---
 
 ## Where your progress is saved
 
-- Progress is stored **in your browser** on this computer (not on a server).
-- Use **Export** in the top bar to download a backup file (JSON).
-- Use **Import** to load a backup or move your save to another PC.
-- You can create **multiple profiles** (e.g. one per character) from the profile menu.
+- Your checkmarks stay **in your browser** on this computer.
+- Click **Export** in the app (top bar) to save a backup file to your PC.
+- Click **Import** to load that backup (useful if you change computers).
+- You can make more than one profile (different characters) from the profile menu in the app.
 
-If you clear browser data for this site, you can lose progress unless you exported a backup.
-
----
-
-## Put this project on GitHub (for the owner)
-
-If you are setting up the repo for the first time:
-
-1. Create a new empty repository on [GitHub](https://github.com/new).  
-   Name idea: `ds2-sotfs-progression-engine`.  
-   Do **not** add a README or .gitignore on GitHub (this project already has them).
-
-2. In a terminal, from this folder:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit: DS2 SotFS progression engine"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-git push -u origin main
-```
-
-Replace `YOUR_USERNAME` and `YOUR_REPO_NAME` with your GitHub user and repo name.
-
-More detail: see [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md).
+If you delete browser data for this site, you can lose progress — so **Export** once in a while if you care about your run.
 
 ---
 
-## Share the app online (optional)
+## What each tab is for
 
-Anyone can run it locally with the steps above. To host a public copy:
-
-```bash
-cd ds2-engine
-npm install
-npm run build
-```
-
-Upload the `ds2-engine/dist` folder to [GitHub Pages](https://pages.github.com), Netlify, or Vercel as a static site. No API keys are required.
-
----
-
-## Project layout (short)
-
-| Folder / file | Purpose |
-|---------------|---------|
-| `ds2-engine/` | The web app (main code) |
-| `DS2_SotFS_100_Percent_Walkthrough.md` | Full walkthrough text |
-| `DS2_SOTFS_ENGINE_CONTEXT.md` | Notes for developers |
-| `Builds_Guide/` | Extra build comparison notes |
+| Tab | What it does |
+|-----|----------------|
+| **Overview** | Overall progress and warnings |
+| **Areas** | Checklists for each area |
+| **Quests** | NPC questlines |
+| **Trackers** | Gestures, covenants, Estus, bone dust |
+| **Build** | Level-up guide and gear lists |
+| **Farming** | Soul and material farming spots |
+| **Items** | Boss souls, secrets, shops |
+| **Enemies** | Weaknesses and drops |
+| **Simulator** | Try stats and gear |
+| **Get OP** | Extra tips |
 
 ---
 
-## Problems?
+## Quick help
 
-| Problem | What to try |
-|---------|-------------|
-| `npm` is not recognized | Install Node.js and restart the terminal |
-| Port 5173 is busy | Close other dev servers, or restart the PC |
-| Blank page | Hard-refresh the browser (`Ctrl+F5`) |
-| Progress disappeared | Import your last exported JSON backup |
+| Something went wrong | Try this |
+|----------------------|----------|
+| `npm` is not recognized | Install Node.js from [nodejs.org](https://nodejs.org), close the terminal, open a new one, try again |
+| Page will not load | Make sure `npm start` is still running and you typed `http://localhost:5173` |
+| Blank or stuck page | Refresh the browser (Ctrl+F5) |
+| Lost my checkmarks | Use **Import** if you exported a backup before |
 
 ---
 
-## License and game content
+## For developers
 
-Dark Souls 2 and all related names belong to their owners. This project is for personal fan use. Do not sell it or claim it is official.
+Technical notes and GitHub publishing help:
+
+- [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md)
+- [DS2_SOTFS_ENGINE_CONTEXT.md](DS2_SOTFS_ENGINE_CONTEXT.md)
+
+---
+
+## Disclaimer
+
+**Node.js:** If commands like `npm` do nothing or say “not recognized” right after you installed Node.js, close every terminal window, open a fresh one, and try again. If it still fails, restart your computer once, then try `npm start` again.
+
+**Game content:** Dark Souls 2 and related names belong to their owners. This project is for personal fan use only. Do not sell it or say it is an official product.
