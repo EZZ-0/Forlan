@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS2 SotFS — 100% Engine + Dark Hexer Build</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --bg: #0e0d0b; --bg2: #161310; --bg3: #1e1a16; --card: #201c18;
+  --gold: #c8a030; --ember: #d4652a; --green: #4ade80; --purple: #8b5cf6;
+  --lt: #e8dcc8; --dim: #6b6050; --border: #2a2420;
+  --p1: #6b7c52; --p2: #7a8c62; --p3: #c8a030; --p4: #d4862a; --p5: #c45a30; --p6: #a03030;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--lt); font-family:'EB Garamond',Georgia,serif; font-size:14px; line-height:1.4; min-height:100vh; }
+::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg2); } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+.app { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+.header { padding:12px 16px 8px; text-align:center; border-bottom:1px solid var(--border); }
+.header h1 { font-family:'Cinzel',serif; font-size:15px; color:var(--gold); letter-spacing:2px; }
+.header .sub { font-size:11px; color:var(--dim); margin-top:2px; }
+
+/* Tabs */
+.tabs { display:flex; border-bottom:1px solid var(--border); background:var(--bg2); }
+.tab { flex:1; padding:10px 4px; text-align:center; font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.5px;
+  color:var(--dim); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
+.tab:hover { color:var(--lt); }
+.tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+/* Content */
+.content { flex:1; overflow-y:auto; padding-bottom:20px; }
+.section-title { font-family:'Cinzel',serif; font-size:16px; color:var(--gold); padding:16px 16px 8px; letter-spacing:1px; }
+.section-sub { font-size:11px; color:var(--dim); padding:0 16px 12px; }
+
+/* Progress bar */
+.pbar { background:var(--border); border-radius:3px; height:6px; overflow:hidden; flex:1; }
+.pbar .fill { height:100%; border-radius:3px; transition:width 0.4s; }
+
+/* Cards & Items */
+.area-card { margin:4px 12px; padding:10px 12px; background:var(--card); border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:10px; border:1px solid var(--border); }
+.area-card:hover { border-color:var(--gold); }
+.area-card .name { flex:1; font-size:12px; color:var(--lt); }
+.area-card .pct { font-size:11px; color:var(--dim); min-width:36px; text-align:right; }
+
+.item-row { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; margin:3px 12px; border-radius:5px;
+  cursor:pointer; border:1px solid var(--border); background:var(--bg2); transition:all 0.15s; }
+.item-row:hover { border-color:#3a342a; }
+.item-row.done { opacity:0.45; border-color:var(--green); background:rgba(74,222,128,0.03); }
+.item-row .check { width:18px; height:18px; border:2px solid var(--border); border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.item-row.done .check { border-color:var(--green); background:rgba(74,222,128,0.15); color:var(--green); font-size:12px; }
+.item-row .text { flex:1; font-size:12px; }
+
+.type-boss { color:var(--ember); } .type-key { color:var(--gold); } .type-npc { color:var(--purple); }
+.type-bonfire { color:#e85830; } .type-item { color:var(--dim); } .type-warn { color:#ef4444; font-weight:600; }
+
+/* Quest section */
+.quest-card { margin:6px 12px; padding:10px 12px; background:var(--card); border-radius:6px; border:1px solid var(--border); }
+.quest-name { font-family:'Cinzel',serif; font-size:13px; color:var(--gold); margin-bottom:6px; }
+.quest-step { display:flex; align-items:flex-start; gap:8px; padding:5px 0; cursor:pointer; }
+.quest-step.done { opacity:0.4; }
+.boss-tag { display:inline-block; background:rgba(212,101,42,0.15); color:var(--ember); padding:2px 8px; border-radius:3px; font-size:10px; margin:2px 0; }
+
+/* Tracker grid */
+.tracker-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:0 12px; }
+.tracker-item { display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:3px; cursor:pointer; font-size:11px; }
+.tracker-item.done { opacity:0.4; }
+
+/* ═══ BUILD TAB ═══ */
+.build-header { padding:16px; text-align:center; border-bottom:1px solid var(--border); }
+.build-header h2 { font-family:'Cinzel',serif; font-size:18px; color:var(--gold); letter-spacing:2px; }
+.build-header .philosophy { font-size:12px; color:var(--dim); margin-top:4px; max-width:400px; margin-left:auto; margin-right:auto; }
+
+.stat-bar { display:flex; gap:2px; padding:8px 12px; background:var(--bg2); border-bottom:1px solid var(--border); flex-wrap:wrap; justify-content:center; }
+.stat-chip { font-size:10px; padding:3px 6px; border-radius:3px; background:var(--card); border:1px solid var(--border); color:var(--dim); font-family:'Cinzel',serif; }
+.stat-chip .val { color:var(--gold); font-weight:700; }
+.stat-chip.done { border-color:var(--green); }
+.stat-chip.done .val { color:var(--green); }
+
+/* Phase nav */
+.phase-nav { display:flex; gap:0; border-bottom:1px solid var(--border); }
+.phase-btn { flex:1; padding:8px 4px; text-align:center; font-size:9px; font-family:'Cinzel',serif; cursor:pointer; border-bottom:2px solid transparent; color:var(--dim); transition:all 0.15s; }
+.phase-btn:hover { color:var(--lt); }
+.phase-btn.active { border-bottom-color:var(--gold); color:var(--gold); }
+
+/* Level rows */
+.level-grid { padding:4px 8px; }
+.phase-header { padding:10px 12px 6px; display:flex; align-items:center; gap:8px; }
+.phase-header .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.phase-header .label { font-family:'Cinzel',serif; font-size:12px; color:var(--gold); }
+.phase-header .range { font-size:10px; color:var(--dim); margin-left:auto; }
+.phase-header .areas { font-size:10px; color:var(--dim); }
+
+.lvl-row { display:flex; align-items:center; gap:0; padding:0; margin:1px 4px; border-radius:3px; cursor:pointer;
+  background:var(--bg2); border:1px solid transparent; transition:all 0.1s; font-size:11px; height:26px; }
+.lvl-row:hover { border-color:#3a342a; }
+.lvl-row.done { opacity:0.35; }
+.lvl-row .sl { width:38px; text-align:center; font-family:'Cinzel',serif; font-size:10px; color:var(--dim); flex-shrink:0; }
+.lvl-row .phase-dot { width:4px; height:18px; border-radius:2px; flex-shrink:0; margin-right:6px; }
+.lvl-row .stat-name { width:32px; font-family:'Cinzel',serif; font-size:10px; font-weight:700; flex-shrink:0; }
+.lvl-row .arrow { color:var(--dim); font-size:10px; margin:0 3px; flex-shrink:0; }
+.lvl-row .new-val { width:22px; font-size:11px; font-weight:600; flex-shrink:0; }
+.lvl-row .note { flex:1; font-size:9.5px; color:var(--dim); font-style:italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:6px; }
+.lvl-row .chk { width:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:10px; color:var(--border); }
+.lvl-row.done .chk { color:var(--green); }
+.lvl-row.milestone { background:rgba(200,160,48,0.06); border-color:rgba(200,160,48,0.15); }
+.lvl-row.milestone .note { color:var(--gold); font-weight:600; font-style:normal; }
+
+/* Weapon/spell cards in build */
+.equip-section { padding:8px 12px; }
+.equip-title { font-family:'Cinzel',serif; font-size:12px; color:var(--gold); margin:10px 0 6px; letter-spacing:1px; }
+.equip-card { display:flex; align-items:center; gap:8px; padding:6px 10px; margin:3px 0; background:var(--card); border-radius:5px; border:1px solid var(--border); font-size:11px; }
+.equip-card .role { font-size:9px; color:var(--dim); }
+.equip-card .ename { color:var(--lt); font-weight:600; flex:1; }
+
+/* Stats summary in build */
+.build-summary { padding:10px 12px; background:var(--card); margin:8px 12px; border-radius:6px; border:1px solid var(--border); }
+.build-summary .row { display:flex; justify-content:space-between; font-size:11px; padding:2px 0; }
+.build-summary .row .k { color:var(--dim); } .build-summary .row .v { color:var(--lt); }
+
+/* Reset button */
+.reset-btn { margin:12px; padding:8px; text-align:center; font-size:10px; color:#ef4444; cursor:pointer; border:1px solid #3a1515; border-radius:5px; }
+.reset-btn:hover { background:rgba(239,68,68,0.08); }
+
+/* Back button */
+.back-btn { padding:10px 16px; font-size:11px; color:var(--dim); cursor:pointer; display:flex; align-items:center; gap:4px; }
+.back-btn:hover { color:var(--lt); }
+
+/* Area selector */
+.area-select { position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; height:100vh; background:var(--bg); z-index:100; overflow-y:auto; }
+
+/* Sub-tabs within build */
+.build-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--bg2); }
+.build-tab { flex:1; padding:8px; text-align:center; font-size:10px; color:var(--dim); cursor:pointer; border-bottom:2px solid transparent; font-family:'Cinzel',serif; }
+.build-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+/* Info box */
+.info-box { margin:8px 12px; padding:10px; background:rgba(139,92,246,0.06); border:1px solid rgba(139,92,246,0.2); border-radius:6px; font-size:11px; color:var(--lt); line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DS2 SOTFS 100% ENGINE v4 — LOCKED DARK HEXER BUILD
+// ══════════════════════════════════════════════════════════════
+
+const STORAGE_KEY = 'ds2_engine_v4';
+
+// ─── AREAS (Fighting Cowboy route) ───
+const AREA_ORDER = [
+  'things_betwixt','majula','fofg','heides','no_mans','lost_bastille',
+  'huntsmans','harvest','earthen','iron_keep','the_pit','gutter','black_gulch',
+  'shaded','doors_pharros','brightstone','sinners','drangleic','shrine_amana',
+  'undead_crypt','aldias','dragon_aerie','memories','dark_chasm','throne',
+  'dlc_sunken','dlc_iron','dlc_ivory'
+];
+
+const A = {
+things_betwixt:{name:"Things Betwixt",items:[["tb1","Rusted Coin (gap in wall)","item"],["tb2","Talk to Milibeth & Old Firekeepers","npc"],["tb3","Chest upstairs — Human Effigy","item"],["tb4","Destroy cart — Soul of Lost Undead + Torch","item"],["tb5","Light bonfire","bonfire"],["tb6","Hidden path — Sm. Smooth & Silky Stone","item"],["tb7","Kill Ogre — Stone Ring","item"],["tb8","Gold Pine Resin","item"],["tb9","Tutorial: Dagger + Lifegem, bird nest trade","item"],["tb10","Fog Gate 2: Amber Herbs + Cracked Red Eye Orb","item"],["tb11","Push trees, kill 2 Ogres, Coffin (sex swap)","item"],["tb12","Return to Milibeth — Handmaid's Ladle","npc"],["tb13","Path to Majula: Morning Star, Sacred Chime, Binoculars","item"]]},
+majula:{name:"Majula",items:[["mj1","Light bonfire, Emerald Herald — Estus Flask","bonfire"],["mj2","Benhart of Jugo — exhaust dialogue","npc"],["mj3","Divine Blessing, Lifegems, Homeward Bones","item"],["mj4","Building: kill Hollow, Lloyd's Talismans","item"],["mj5","Saulden → Welcome gesture, Way of Blue","npc"],["mj6","Well rock — Estus Flask Shard","item"],["mj7","Spiral stairs — Crimson Parma","item"],["mj8","Victor's Stone — Company of Champions","item"],["mj9","Sweet Shalquoir — Silvercat Ring & Ring of Whispers","npc"],["mj10","Maughlin the Armorer — buy gear","npc"],["mj11","Ladder by Maughlin — Titanite Shard","item"],["mj12","Path to FoFG: items + pull switch","item"]]},
+fofg:{name:"Forest of Fallen Giants",items:[["fg1","Crestfallen's Retreat bonfire","bonfire"],["fg2","River items, ladders, jump → Shortsword","item"],["fg3","Kill Heide Knight — Heide Knight Sword","item"],["fg4","Cardinal Tower bonfire","bonfire"],["fg5","Melentia — Lenigrast's Key (1000), Pharros Lockstone","npc"],["fg6","Spend 10k at Melentia → Covetous Silver +1","npc"],["fg7","Upstairs: break door → Shield, Hand Axe","item"],["fg8","Ambush room — Estus Shard + Sm. White Soapstone","item"],["fg9","Branch: Divine Blessing. Scaffolding: Human Effigy","item"],["fg10","Caves: Hollow Soldier Helm, Soul of Proud Knight","item"],["fg11","★ Past Salamander — Fire Longsword ★","key"],["fg12","Return Majula: upgrade, open Lenigrast, Short Bow","key"],["fg13","Optional: Salamander pit — Hawk Ring, Flame Quartz +1","item"],["fg14","Pursuer platform shortcut","item"],["fg15","Early Pursuer — Ring of Blades","boss"],["fg16","Talk to Cale — House Key for Majula mansion","npc"],["fg17","BOSS: THE LAST GIANT — Soldier Key","boss"],["fg18","Use Soldier Key: 3 doors","key"],["fg19","BOSS: THE PURSUER → bird nest → Lost Bastille","boss"]]},
+heides:{name:"Heide's Tower of Flame",items:[["ht1","Tower of Flame bonfire","bonfire"],["ht2","Upper: Human Effigy, Dark Torches, items","item"],["ht3","Chest — Sublime Bone Dust","item"],["ht4","Bottom of spiral: Monastery Charm","item"],["ht5","BOSS: DRAGONRIDER","boss"],["ht6","Licia of Lindeldt — moves to Majula rotunda","npc"],["ht7","BOSS: OLD DRAGONSLAYER — Old Leo Ring","boss"],["ht8","Blue Sentinel Targray → Duel Bow + Blue Sentinels","npc"]]},
+no_mans:{name:"No-Man's Wharf",items:[["nm1","Bonfire","bonfire"],["nm2","Pharros Lockstone: illuminates area","item"],["nm3","Heavy Crossbow +3, Greatsword, Iron Arrows","item"],["nm4","⚔ LUCATIEL — house LEFT of first stairs","npc"],["nm5","Pull bell lever on dock → call ship","key"],["nm6","BOSS: FLEXILE SENTRY","boss"],["nm7","Ship → Lost Bastille","key"]]},
+lost_bastille:{name:"The Lost Bastille",items:[["lb1","Tower Apart / Exile Holding Cells bonfires","bonfire"],["lb2","★ Dull Ember → GIVE TO MCDUFF","key"],["lb3","⚔ LUCATIEL — tower from McDuff's Workshop","npc"],["lb4","Branch on Straid — boss soul trades","npc"],["lb5","Straid → Mock gesture","npc"],["lb6","Estus Flask Shard","item"],["lb7","Give Dull Ember to McDuff → INFUSION SMITH","npc"],["lb8","BOSS: RUIN SENTINELS","boss"],["lb9","Bastille Key","key"],["lb10","Belfry Luna → Bell Keeper covenant","key"],["lb11","BOSS: BELFRY GARGOYLES","boss"]]},
+huntsmans:{name:"Huntsman's Copse",items:[["hc1","Pay Licia 2,000 souls to open path","key"],["hc2","Undead Lockaway bonfire","bonfire"],["hc3","★ Felkin — hex shop (8 INT/FTH) / free gear (20/20)","npc"],["hc4","Free Creighton → Fist Pump gesture","npc"],["hc5","Token of Fidelity + Pharros Lockstone","item"],["hc6","Soul Spear sorcery","item"],["hc7","Estus Flask Shard","item"],["hc8","BOSS: SKELETON LORDS","boss"],["hc9","BOSS: EXECUTIONER'S CHARIOT","boss"],["hc10","Brotherhood of Blood (Titchy Gren)","npc"]]},
+harvest:{name:"Harvest Valley",items:[["hv1","Bonfire","bonfire"],["hv2","Fragrant Branch of Yore","item"],["hv3","Sublime Bone Dust","item"],["hv4","Gavlan (poison building) — exhaust dialogue","npc"],["hv5","Heirs of Sun altar → Praise the Sun gesture","key"],["hv6","BOSS: COVETOUS DEMON","boss"]]},
+earthen:{name:"Earthen Peak",items:[["ep1","Lower Earthen Peak bonfire","bonfire"],["ep2","⚔ LUCATIEL — DOWN to poison, RIGHT","npc"],["ep3","Gilligan → Prostration gesture (2,000)","npc"],["ep4","Mirrah Shield","item"],["ep5","★ BURN THE WINDMILL — drains ALL boss poison","warn"],["ep6","Pate — questline progress","npc"],["ep7","BOSS: MYTHA","boss"],["ep8","Estus Flask Shard","item"]]},
+iron_keep:{name:"Iron Keep / Belfry Sol",items:[["ik1","Threshold Bridge bonfire","bonfire"],["ik2","Covetous Gold Serpent Ring +1","item"],["ik3","Estus Flask Shard","item"],["ik4","Sublime Bone Dust","item"],["ik5","Iron Key","key"],["ik6","Magerold — Branch, Lockstones, Warmth","npc"],["ik7","BOSS: SMELTER DEMON","boss"],["ik8","BOSS: OLD IRON KING — Lord Soul","boss"],["ik9","Light Primal Bonfire","bonfire"],["ik10","Belfry Sol","key"]]},
+the_pit:{name:"The Pit / Grave of Saints",items:[["pt1","Majula Pit — ladder or Silvercat","key"],["pt2","Grave of Saints bonfire","bonfire"],["pt3","Pharros Lockstones throughout","item"],["pt4","BOSS: ROYAL RAT VANGUARD","boss"],["pt5","Rat King covenant","npc"]]},
+gutter:{name:"The Gutter",items:[["gt1","Upper Gutter bonfire","bonfire"],["gt2","Light sconces for navigation","item"],["gt3","Fragrant Branch of Yore","item"],["gt4","Dark Pyromancy Flame","item"],["gt5","Navigate maze → Black Gulch","key"]]},
+black_gulch:{name:"Black Gulch",items:[["bg1","Bonfire. BREAK POISON STATUES","bonfire"],["bg2","Fragrant Branch — SAVE","item"],["bg3","Scraps of Life hex","item"],["bg4","⚔ LUCATIEL — cliff drop near poison statues","npc"],["bg5","Hidden bonfire: hug LEFT wall from fog gate","key"],["bg6","Hidden Chamber bonfire + Lucatiel summon","bonfire"],["bg7","Darkdiver Grandahl — cave RIGHT ledge","npc"],["bg8","BOSS: THE ROTTEN — Lord Soul","boss"],["bg9","Light Primal Bonfire","bonfire"]]},
+shaded:{name:"Shaded Woods",items:[["sw1","Branch on Rosabeth","key"],["sw2","Rosabeth → Joy gesture → Majula","npc"],["sw3","Benhart — exhaust dialogue","npc"],["sw4","Ruined Fork Road bonfire","bonfire"],["sw5","Foggy LEFT → Vengarl's Head → Decapitate gesture","npc"],["sw6","Ring of Whispers → Tark → Warmup gesture","npc"],["sw7","BOSS: SCORPIONESS NAJKA","boss"],["sw8","Return to Tark → Second Dragon Ring + Branch","npc"],["sw9","Estus Flask Shard","item"],["sw10","Branch on Lion Warrior → Fang Key","item"],["sw11","Three-path fork","key"]]},
+doors_pharros:{name:"Doors of Pharros",items:[["dp1","Bonfire","bonfire"],["dp2","Save Lockstones","item"],["dp3","Twisted Barricade hex","item"],["dp4","Santier's Spear, Gyrm Greatshield","item"],["dp5","Gavlan — final location","npc"],["dp6","Grandahl — hidden cave","npc"],["dp7","BOSS: ROYAL RAT AUTHORITY — kill small rats FIRST","boss"]]},
+brightstone:{name:"Brightstone Cove Tseldora",items:[["bc1","Royal Army Campsite bonfire","bonfire"],["bc2","Estus Flask Shard","item"],["bc3","Sublime Bone Dust","item"],["bc4","Cromwell the Pardoner","npc"],["bc5","BOSS: PROWLING MAGUS","boss"],["bc6","Pate & Creighton confrontation","npc"],["bc7","BOSS: DUKE'S DEAR FREJA — Lord Soul","boss"],["bc8","Light Primal Bonfire","bonfire"],["bc9","Lord's Private Chamber spells","key"]]},
+sinners:{name:"Sinner's Rise",items:[["sr1","Bonfire","bonfire"],["sr2","Sublime Bone Dust","item"],["sr3","★ Light oil trails BOTH SIDES for lock-on","warn"],["sr4","BOSS: THE LOST SINNER — Lord Soul","boss"],["sr5","Light Primal Bonfire","bonfire"]]},
+drangleic:{name:"Drangleic Castle",items:[["dc1","Shrine of Winter → need 4 Lord Souls","key"],["dc2","Kill enemies near golem doors","key"],["dc3","King's Gate bonfire","bonfire"],["dc4","Wellager → This One's Me gesture","npc"],["dc5","Grandahl — drop through floor → Pilgrims of Dark","npc"],["dc6","Estus Flask Shard","item"],["dc7","BOSS: TWIN DRAGONRIDERS","boss"],["dc8","Benhart — exhaust dialogue","npc"],["dc9","BOSS: LOOKING GLASS KNIGHT","boss"],["dc10","King's Passage Key","key"]]},
+shrine_amana:{name:"Shrine of Amana",items:[["sa1","Bonfire. USE A BOW — snipe priestesses","bonfire"],["sa2","Estus Flask Shard","item"],["sa3","Sunlight Blade miracle","item"],["sa4","Havel's Set (cave chest)","item"],["sa5","Talk to Milfanito","npc"],["sa6","BOSS: DEMON OF SONG","boss"]]},
+undead_crypt:{name:"Undead Crypt",items:[["uc1","Bonfire","bonfire"],["uc2","★ NO TORCHES! NO BELLS! Aggros Agdayne","warn"],["uc3","Agdayne (no torch!) → Have Mercy! gesture","npc"],["uc4","Avelyn crossbow","item"],["uc5","BOSS: VELSTADT","boss"],["uc6","King's Ring from Vendrick's chamber","key"],["uc7","Vendrick (need Giant Souls later)","npc"],["uc8","Return to Agdayne w/ King's Ring → Darkdrift","npc"]]},
+aldias:{name:"Aldia's Keep",items:[["ak1","King's Ring on gate in Shaded Woods","key"],["ak2","Foregarden bonfire","bonfire"],["ak3","Estus Flask Shard","item"],["ak4","Soul Vessel","item"],["ak5","Lucatiel — DO NOT TALK until 3+ boss survivals","npc"],["ak6","Talk to Aldia (affects ending)","npc"],["ak7","Navlaan (hollow only) — assassination quests","npc"],["ak8","BOSS: GUARDIAN DRAGON","boss"]]},
+dragon_aerie:{name:"Dragon Aerie / Shrine",items:[["da1","Dragon Aerie bonfire — Crystal Lizards","bonfire"],["da2","Petrified Dragon Bones, Twinkling Titanite","item"],["da3","Dragon Shrine: DON'T attack Dragon Knights","warn"],["da4","Emerald Herald → Aged Feather","npc"],["da5","Petrified Egg → Magerold → Dragon Remnants","key"],["da6","Ancient Dragon → Ashen Mist Heart","npc"],["da7","Estus Flask Shard","item"],["da8","Optional BOSS: ANCIENT DRAGON","boss"]]},
+memories:{name:"Memories",items:[["mm1","Need Ashen Mist Heart","key"],["mm2","Memory of Vammar — Drummond → Hurrah! gesture","npc"],["mm3","Memory of Vammar: Soul of a Giant","item"],["mm4","Memory of Orro: Soul of a Giant","item"],["mm5","BOSS: GIANT LORD","boss"],["mm6","Giant Lord Soul + Soul of a Giant","item"]]},
+dark_chasm:{name:"Dark Chasm of Old",items:[["ch1","Enter at each Grandahl location (1 Human Effigy each)","key"],["ch2","Chasm 1: Black Gulch","key"],["ch3","Chasm 2: Shaded Woods (easiest)","key"],["ch4","Chasm 3: Drangleic Castle","key"],["ch5","BOSS: DARKLURKER — weak to FIRE","boss"],["ch6","Grandahl rewards: Resonant Soul, GRS, Climax","npc"]]},
+throne:{name:"Throne of Want",items:[["tw1","BOSS: THRONE WATCHER & DEFENDER","boss"],["tw2","BOSS: NASHANDRA — bring curse cure","boss"],["tw3","BOSS: ALDIA (if dialogue done)","boss"],["tw4","Ending choice","key"]]},
+dlc_sunken:{name:"DLC 1: Sunken King",items:[["d11","Access via Black Gulch Primal","key"],["d12","Sanctum Walk bonfire","bonfire"],["d13","Eternal Sanctum Key, Dragon Stone","key"],["d14","Focus Souls + Promised Walk of Peace","item"],["d15","Lightning Clutch Ring","item"],["d16","BOSS: ELANA","boss"],["d17","BOSS: SINH","boss"],["d18","Optional BOSS: GRAVEROBBER GANG","boss"]]},
+dlc_iron:{name:"DLC 2: Old Iron King",items:[["d21","Access via Iron Keep Primal","key"],["d22","Throne Floor bonfire","bonfire"],["d23","Collect ALL 11 Smelter Wedges","key"],["d24","Outcry + Dance of Fire pyromancies","item"],["d25","BOSS: FUME KNIGHT","boss"],["d26","Optional BOSS: SIR ALONNE","boss"],["d27","Optional BOSS: BLUE SMELTER DEMON","boss"]]},
+dlc_ivory:{name:"DLC 3: Ivory King",items:[["d31","Access via Shrine of Winter → Eleum Loyce","key"],["d32","Outer Wall bonfire","bonfire"],["d33","Eye of the Priestess — see invisible enemies","key"],["d34","★ Find ALL 4 Loyce Knights before boss","warn"],["d35","Loyce Knight 1","item"],["d36","Loyce Knight 2","item"],["d37","Loyce Knight 3","item"],["d38","Loyce Knight 4","item"],["d39","BOSS: AAVA (get Eye first!)","boss"],["d310","BOSS: BURNT IVORY KING","boss"],["d311","Optional BOSS: LUD & ZALLEN","boss"],["d312","Soul Flash + Blizzard sorceries","item"]]}
+};
+
+// ─── NPC QUESTS ───
+const QUESTS = [
+  {name:"Lucatiel of Mirrah",steps:["nm4","lb3","ep2","bg4","ak5"],bosses:["nm6","ik7","bg8","sr4"],reward:"Lucatiel's Set + Mirrah Greatsword (3 boss survivals then talk in Aldia's)"},
+  {name:"Benhart of Jugo",steps:["mj2","sw3","dc8"],bosses:["bc5","mm5","tw1"],reward:"Benhart's Set + Moonlight GS (3 boss survivals)"},
+  {name:"Pate & Creighton",steps:["fg16","hc4","ep6","bc6"],bosses:[],reward:"Pate's Set OR Creighton's Set (choose side in Brightstone)"},
+  {name:"Grandahl (Pilgrims of Dark)",steps:["bg7","dp6","dc5"],bosses:["ch5"],reward:"Resonant Soul, Great Resonant Soul, Climax hexes"},
+  {name:"Gavlan",steps:["no_mans:nm3","hv4","dp5"],bosses:[],reward:"Poison items + soul trading (final shop in Doors of Pharros)"},
+];
+
+// ─── GESTURES ───
+const GESTURES = [
+  ["Welcome","Saulden","Majula","mj5"],["Duel Bow","Targray","Heide's","ht8"],["Fist Pump","Creighton","Huntsman's","hc4"],
+  ["Prostration","Gilligan","Earthen Peak","ep3"],["Joy","Rosabeth","Shaded Woods","sw2"],["Praise the Sun","Altar","Harvest Valley","hv5"],
+  ["Decapitate","Vengarl's Head","Shaded Woods","sw5"],["Warmup","Tark","Shaded Woods","sw6"],["Mock","Straid","Lost Bastille","lb5"],
+  ["War Cry","Vengarl's Body","Tseldora","bc9"],["Have Mercy!","Agdayne","Undead Crypt","uc3"],["Hurrah!","Drummond","Memory","mm2"],
+  ["This One's Me","Wellager","Drangleic","dc4"],
+];
+
+// ─── COVENANTS ───
+const COVENANTS = [
+  ["Way of Blue","Majula","Saulden","mj5"],["Company of Champions","Majula","Victor's Stone","mj8"],
+  ["Blue Sentinels","Heide's","Targray","ht8"],["Bell Keepers","Lost Bastille","Belfry Luna","lb10"],
+  ["Brotherhood of Blood","Huntsman's","Titchy Gren","hc10"],["Heirs of the Sun","Harvest Valley","Altar","hv5"],
+  ["Rat King","Grave of Saints","Rat King","pt5"],["Pilgrims of Dark","Drangleic","Grandahl","dc5"],
+  ["Dragon Remnants","Dragon Shrine","Magerold","da5"],
+];
+
+// ═══════════════════════════════════════════════════════════
+// 139 LEVEL-BY-LEVEL ROADMAP — DARK MELEE HEXER
+// ═══════════════════════════════════════════════════════════
+// [SL, stat, newValue, phase, note]
+const LEVELS = [
+  // Phase 1: SL 12-24 (13 levels) — Fire Longsword + Survive
+  [12,"STR",4,1,""],
+  [13,"STR",5,1,""],
+  [14,"STR",6,1,""],
+  [15,"STR",7,1,"★ Can 2H Fire Longsword"],
+  [16,"VGR",6,1,""],
+  [17,"VGR",7,1,""],
+  [18,"VGR",8,1,""],
+  [19,"DEX",8,1,""],
+  [20,"DEX",9,1,"★ Can 1H Fire Longsword"],
+  [21,"VGR",9,1,""],
+  [22,"VGR",10,1,""],
+  [23,"ATN",13,1,""],
+  [24,"ATN",14,1,""],
+  // Phase 2: SL 25-35 (11 levels) — Felkin + Dark Orb
+  [25,"FTH",5,2,""],
+  [26,"FTH",6,2,""],
+  [27,"FTH",7,2,""],
+  [28,"FTH",8,2,"★ Felkin hex shop open — buy Dark Orb"],
+  [29,"ATN",15,2,""],
+  [30,"ATN",16,2,"★ 3 spell slots"],
+  [31,"VGR",11,2,""],
+  [32,"VGR",12,2,""],
+  [33,"VGR",13,2,""],
+  [34,"VGR",14,2,""],
+  [35,"VGR",15,2,""],
+  // Phase 3: SL 36-55 (20 levels) — 20/20 Rush
+  [36,"INT",15,3,""],
+  [37,"FTH",9,3,""],
+  [38,"INT",16,3,""],
+  [39,"FTH",10,3,""],
+  [40,"INT",17,3,""],
+  [41,"FTH",11,3,""],
+  [42,"INT",18,3,""],
+  [43,"FTH",12,3,""],
+  [44,"INT",19,3,""],
+  [45,"FTH",13,3,""],
+  [46,"INT",20,3,"INT 20 ✓"],
+  [47,"FTH",14,3,""],
+  [48,"FTH",15,3,""],
+  [49,"FTH",16,3,""],
+  [50,"FTH",17,3,""],
+  [51,"FTH",18,3,""],
+  [52,"FTH",19,3,""],
+  [53,"FTH",20,3,"★ 20/20! FREE Sunset Staff + Hexer Set"],
+  [54,"VGR",16,3,""],
+  [55,"VGR",17,3,""],
+  // Phase 4: SL 56-90 (35 levels) — Dark Melee Online
+  [56,"STR",8,4,""],
+  [57,"STR",9,4,""],
+  [58,"STR",10,4,""],
+  [59,"STR",11,4,""],
+  [60,"STR",12,4,""],
+  [61,"STR",13,4,""],
+  [62,"STR",14,4,"★ STR target — all medium weapons"],
+  [63,"DEX",10,4,""],
+  [64,"DEX",11,4,""],
+  [65,"DEX",12,4,""],
+  [66,"DEX",13,4,""],
+  [67,"DEX",14,4,""],
+  [68,"DEX",15,4,""],
+  [69,"DEX",16,4,""],
+  [70,"DEX",17,4,""],
+  [71,"DEX",18,4,""],
+  [72,"DEX",19,4,""],
+  [73,"DEX",20,4,"★ Uchigatana! Dark infuse at McDuff"],
+  [74,"INT",21,4,""],
+  [75,"FTH",21,4,""],
+  [76,"INT",22,4,""],
+  [77,"FTH",22,4,""],
+  [78,"INT",23,4,""],
+  [79,"FTH",23,4,""],
+  [80,"INT",24,4,""],
+  [81,"FTH",24,4,""],
+  [82,"INT",25,4,""],
+  [83,"FTH",25,4,""],
+  [84,"INT",26,4,""],
+  [85,"FTH",26,4,""],
+  [86,"INT",27,4,""],
+  [87,"FTH",27,4,""],
+  [88,"INT",28,4,""],
+  [89,"FTH",28,4,""],
+  [90,"VGR",18,4,""],
+  // Phase 5: SL 91-120 (30 levels) — 30/30 + Diversify
+  [91,"INT",29,5,""],
+  [92,"FTH",29,5,""],
+  [93,"INT",30,5,"★ INT 30 — dark soft cap!"],
+  [94,"FTH",30,5,"★ FTH 30 — DARK MAXIMIZED"],
+  [95,"VGR",19,5,""],
+  [96,"VGR",20,5,""],
+  [97,"END",7,5,""],
+  [98,"END",8,5,""],
+  [99,"END",9,5,""],
+  [100,"END",10,5,""],
+  [101,"END",11,5,""],
+  [102,"END",12,5,""],
+  [103,"END",13,5,""],
+  [104,"END",14,5,""],
+  [105,"END",15,5,""],
+  [106,"ADP",9,5,""],
+  [107,"ADP",10,5,""],
+  [108,"ADP",11,5,""],
+  [109,"ADP",12,5,""],
+  [110,"ADP",13,5,"★ ADP done (AGI 96 w/ ATN 25)"],
+  [111,"ATN",17,5,""],
+  [112,"ATN",18,5,""],
+  [113,"ATN",19,5,""],
+  [114,"ATN",20,5,"★ 4 spell slots"],
+  [115,"ATN",21,5,""],
+  [116,"ATN",22,5,""],
+  [117,"ATN",23,5,""],
+  [118,"ATN",24,5,""],
+  [119,"ATN",25,5,"★ 5 spell slots"],
+  [120,"VGR",21,5,""],
+  // Phase 6: SL 121-150 (30 levels) — Complete Build
+  [121,"ATN",26,6,""],
+  [122,"ATN",27,6,""],
+  [123,"ATN",28,6,""],
+  [124,"ATN",29,6,""],
+  [125,"ATN",30,6,"★ 6 slots (AGI ~98)"],
+  [126,"VGR",22,6,""],
+  [127,"VGR",23,6,""],
+  [128,"VGR",24,6,""],
+  [129,"VGR",25,6,"★ VGR target — ~1100 HP"],
+  [130,"END",16,6,""],
+  [131,"END",17,6,""],
+  [132,"END",18,6,""],
+  [133,"END",19,6,""],
+  [134,"END",20,6,"★ END target"],
+  [135,"ATN",31,6,""],
+  [136,"ATN",32,6,""],
+  [137,"ATN",33,6,""],
+  [138,"ATN",34,6,""],
+  [139,"ATN",35,6,""],
+  [140,"ATN",36,6,""],
+  [141,"ATN",37,6,""],
+  [142,"ATN",38,6,""],
+  [143,"ATN",39,6,""],
+  [144,"ATN",40,6,"★ 7 slots (AGI ~99)"],
+  [145,"VIT",6,6,""],
+  [146,"VIT",7,6,""],
+  [147,"VIT",8,6,"★ VIT target"],
+  [148,"ATN",41,6,""],
+  [149,"ATN",42,6,""],
+  [150,"ATN",43,6,"★★ BUILD COMPLETE — AGI 100"],
+];
+
+const PHASE_INFO = [
+  {num:1,name:"Fire LS + Survive",range:"SL 11→24",color:"var(--p1)",areas:"Betwixt → FoFG"},
+  {num:2,name:"Felkin + Dark Orb",range:"SL 24→35",color:"var(--p2)",areas:"Heide's → NMW"},
+  {num:3,name:"20/20 → Sunset Staff",range:"SL 35→55",color:"var(--p3)",areas:"Bastille → Harvest"},
+  {num:4,name:"Dark Melee Online",range:"SL 55→90",color:"var(--p4)",areas:"Earthen → Gulch"},
+  {num:5,name:"30/30 + Diversify",range:"SL 90→120",color:"var(--p5)",areas:"Shaded → Drangleic"},
+  {num:6,name:"Complete Build",range:"SL 120→150",color:"var(--p6)",areas:"Amana → DLC"},
+];
+
+const STAT_COLORS = {
+  VGR:"#ef4444",END:"#f97316",VIT:"#a3a3a3",ATN:"#8b5cf6",
+  STR:"#d4652a",DEX:"#65a30d",ADP:"#06b6d4",INT:"#3b82f6",FTH:"#eab308"
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════════════════════
+let state = {
+  tab: 'dash', // dash, areas, quests, trackers, build
+  selArea: null, areaOpen: false,
+  buildSub: 'roadmap', // roadmap, equip, info
+  buildPhase: 0, // 0=all, 1-6=filter
+  ck: {}, // checkbox state for areas/quests
+  lvl: {}, // level completion state
+};
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ck:state.ck, lvl:state.lvl}));
+  } catch(e) {}
+}
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (d.ck) state.ck = d.ck;
+    if (d.lvl) state.lvl = d.lvl;
+  } catch(e) {}
+}
+
+function toggle(id) { state.ck[id] = !state.ck[id]; save(); render(); }
+function toggleLvl(sl) { state.lvl[sl] = !state.lvl[sl]; save(); render(); }
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else el.setAttribute(k, v);
+  });
+  children.flat(Infinity).forEach(c => {
+    if (c == null) return;
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return el;
+}
+
+function areaPct(key) {
+  const items = A[key].items;
+  const done = items.filter(i => state.ck[i[0]]).length;
+  return {done, total:items.length, pct:Math.round(done/items.length*100)};
+}
+
+function pbar(done, total, color='var(--gold)', ht=6) {
+  const outer = h('div',{class:'pbar',style:{height:ht+'px'}});
+  const inner = h('div',{class:'fill',style:{width:(total>0?(done/total)*100:0)+'%',background:color}});
+  outer.appendChild(inner);
+  return outer;
+}
+
+// ── Dashboard ──
+function renderDash() {
+  const allItems = AREA_ORDER.flatMap(a => A[a].items.map(i => i[0]));
+  const totalDone = allItems.filter(id => state.ck[id]).length;
+  const totalItems = allItems.length;
+  const pctAll = Math.round(totalDone/totalItems*100);
+
+  const levsDone = LEVELS.filter(l => state.lvl[l[0]]).length;
+
+  const frag = document.createDocumentFragment();
+  frag.appendChild(h('div',{class:'section-title'},`${pctAll}% Complete`));
+  frag.appendChild(h('div',{style:{padding:'0 16px 4px'}}, pbar(totalDone, totalItems)));
+  frag.appendChild(h('div',{class:'section-sub'},`${totalDone}/${totalItems} items  •  SL ${levsDone > 0 ? LEVELS[Math.min(levsDone,LEVELS.length)-1][0] : 11}/150 build`));
+
+  AREA_ORDER.forEach(ak => {
+    const c = areaPct(ak);
+    const card = h('div',{class:'area-card',onClick:()=>{state.selArea=ak;state.tab='areas';render();}},
+      h('div',{style:{width:'32px'}}, pbar(c.done, c.total, c.pct===100?'var(--green)':'var(--gold)')),
+      h('div',{class:'name'}, (c.pct===100?'✅ ':'')+A[ak].name),
+      h('div',{class:'pct'}, c.pct+'%')
+    );
+    frag.appendChild(card);
+  });
+
+  frag.appendChild(h('div',{class:'reset-btn',onClick:()=>{if(confirm('Reset ALL progress?')){state.ck={};state.lvl={};save();render();}}},'Reset All Progress'));
+  return frag;
+}
+
+// ── Area View ──
+function renderArea() {
+  const ak = state.selArea || AREA_ORDER[0];
+  const area = A[ak];
+  const frag = document.createDocumentFragment();
+
+  // Back + area selector
+  frag.appendChild(h('div',{class:'back-btn',onClick:()=>{state.tab='dash';render();}}, '← Dashboard'));
+
+  // Area dropdown
+  const sel = h('div',{style:{padding:'0 12px 8px'}});
+  const selBtn = h('div',{class:'area-card',onClick:()=>{state.areaOpen=!state.areaOpen;render();}},
+    h('div',{class:'name',style:{fontFamily:"'Cinzel',serif",color:'var(--gold)'}}, area.name),
+    h('div',{class:'pct'}, areaPct(ak).pct+'% ▼')
+  );
+  sel.appendChild(selBtn);
+  frag.appendChild(sel);
+
+  if (state.areaOpen) {
+    const list = h('div',{class:'area-select'});
+    list.appendChild(h('div',{class:'back-btn',onClick:()=>{state.areaOpen=false;render();}}, '← Back'));
+    AREA_ORDER.forEach(a => {
+      const ac = areaPct(a);
+      const row = h('div',{style:{padding:'8px 16px',cursor:'pointer',display:'flex',justifyContent:'space-between',borderBottom:'1px solid var(--border)',color:a===ak?'var(--gold)':'var(--lt)',fontSize:'12px',background:a===ak?'rgba(200,160,48,0.08)':'transparent'},
+        onClick:()=>{state.selArea=a;state.areaOpen=false;render();}},
+        h('span',null,(ac.pct===100?'✅ ':'')+A[a].name),
+        h('span',{style:{color:'var(--dim)'}},ac.pct+'%')
+      );
+      list.appendChild(row);
+    });
+    frag.appendChild(list);
+    return frag;
+  }
+
+  // Items
+  area.items.forEach(([id, text, type]) => {
+    const done = state.ck[id];
+    const row = h('div',{class:'item-row'+(done?' done':''),onClick:()=>toggle(id)},
+      h('div',{class:'check'}, done?'✓':''),
+      h('div',{class:'text type-'+type}, text)
+    );
+    frag.appendChild(row);
+  });
+  return frag;
+}
+
+// ── Quests ──
+function renderQuests() {
+  const frag = document.createDocumentFragment();
+  frag.appendChild(h('div',{class:'section-title'},'NPC Questlines'));
+  QUESTS.forEach(q => {
+    const card = h('div',{class:'quest-card'});
+    card.appendChild(h('div',{class:'quest-name'},q.name));
+    q.steps.forEach(sid => {
+      const done = state.ck[sid];
+      // Find the item text
+      let txt = sid;
+      for (const ak of AREA_ORDER) {
+        const item = A[ak].items.find(i => i[0]===sid);
+        if (item) { txt = item[1]; break; }
+      }
+      card.appendChild(h('div',{class:'quest-step'+(done?' done':''),onClick:()=>toggle(sid)},
+        h('div',{class:'check',style:{width:'16px',height:'16px',border:'2px solid var(--border)',borderRadius:'3px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',color:done?'var(--green)':'transparent',borderColor:done?'var(--green)':'var(--border)'}}, done?'✓':''),
+        h('div',{style:{fontSize:'11px'}}, txt)
+      ));
+    });
+    if (q.bosses.length > 0) {
+      card.appendChild(h('div',{style:{fontSize:'10px',color:'var(--ember)',marginTop:'6px',marginBottom:'2px'}},'Boss Survivals:'));
+      q.bosses.forEach(bid => {
+        const done = state.ck[bid];
+        let txt = bid;
+        for (const ak of AREA_ORDER) {
+          const item = A[ak].items.find(i => i[0]===bid);
+          if (item) { txt = item[1]; break; }
+        }
+        card.appendChild(h('div',{class:'boss-tag',style:{cursor:'pointer',opacity:done?0.4:1},onClick:()=>toggle(bid)}, (done?'✓ ':'')+txt));
+      });
+    }
+    card.appendChild(h('div',{style:{fontSize:'10px',color:'var(--dim)',marginTop:'6px',fontStyle:'italic'}},q.reward));
+    frag.appendChild(card);
+  });
+  return frag;
+}
+
+// ── Trackers ──
+function renderTrackers() {
+  const frag = document.createDocumentFragment();
+
+  frag.appendChild(h('div',{class:'section-title'},'Gestures'));
+  const gd = h('div',{class:'tracker-grid'});
+  GESTURES.forEach(([name,npc,loc,ref]) => {
+    const done = state.ck[ref];
+    gd.appendChild(h('div',{class:'tracker-item'+(done?' done':''),onClick:()=>toggle(ref)},
+      h('span',{style:{color:done?'var(--green)':'var(--dim)'}}, done?'✓':'○'),
+      h('span',null, name)
+    ));
+  });
+  frag.appendChild(gd);
+
+  frag.appendChild(h('div',{class:'section-title',style:{marginTop:'12px'}},'Covenants'));
+  const cd = h('div',{class:'tracker-grid'});
+  COVENANTS.forEach(([name,loc,npc,ref]) => {
+    const done = state.ck[ref];
+    cd.appendChild(h('div',{class:'tracker-item'+(done?' done':''),onClick:()=>toggle(ref)},
+      h('span',{style:{color:done?'var(--green)':'var(--dim)'}}, done?'✓':'○'),
+      h('span',null, name)
+    ));
+  });
+  frag.appendChild(cd);
+  return frag;
+}
+
+// ═══════════════════════════════════════════════════════════
+// BUILD TAB — THE BIG ONE
+// ═══════════════════════════════════════════════════════════
+function getCurrentStats() {
+  const base = {VGR:5,END:6,VIT:5,ATN:12,STR:3,DEX:7,ADP:8,INT:14,FTH:4};
+  LEVELS.forEach(l => { if (state.lvl[l[0]]) base[l[1]] = l[2]; });
+  return base;
+}
+
+function renderBuild() {
+  const frag = document.createDocumentFragment();
+  const cur = getCurrentStats();
+  const levsDone = LEVELS.filter(l => state.lvl[l[0]]).length;
+  const curSL = levsDone > 0 ? LEVELS[Math.min(levsDone, LEVELS.length)-1][0] : 11;
+
+  // Header
+  const hdr = h('div',{class:'build-header'});
+  hdr.appendChild(h('h2',null,'DARK MELEE HEXER'));
+  hdr.appendChild(h('div',{class:'philosophy'},'Dark-buffed katana + all 4 magic schools'));
+  hdr.appendChild(h('div',{style:{marginTop:'6px',fontSize:'13px',color:'var(--gold)',fontFamily:"'Cinzel',serif"}},'SL '+curSL+' / 150'));
+  hdr.appendChild(h('div',{style:{padding:'4px 20px 0'}}, pbar(levsDone, LEVELS.length, 'var(--gold)')));
+  hdr.appendChild(h('div',{style:{fontSize:'10px',color:'var(--dim)',marginTop:'4px'}}, levsDone+'/'+LEVELS.length+' levels'));
+  frag.appendChild(hdr);
+
+  // Current stats bar
+  const targets = {VGR:25,END:20,VIT:8,ATN:43,STR:14,DEX:20,ADP:13,INT:30,FTH:30};
+  const sbar = h('div',{class:'stat-bar'});
+  Object.entries(cur).forEach(([k,v]) => {
+    const done = v >= targets[k];
+    const chip = h('div',{class:'stat-chip'+(done?' done':'')},
+      h('span',{style:{color:STAT_COLORS[k]}},k.slice(0,3)+' '),
+      h('span',{class:'val'},v+'/'+targets[k])
+    );
+    sbar.appendChild(chip);
+  });
+  frag.appendChild(sbar);
+
+  // Build sub-tabs
+  const btabs = h('div',{class:'build-tabs'});
+  [['roadmap','Roadmap'],['equip','Arsenal'],['info','Info']].forEach(([id,label]) => {
+    btabs.appendChild(h('div',{class:'build-tab'+(state.buildSub===id?' active':''),onClick:()=>{state.buildSub=id;render();}},label));
+  });
+  frag.appendChild(btabs);
+
+  if (state.buildSub === 'roadmap') frag.appendChild(renderRoadmap());
+  else if (state.buildSub === 'equip') frag.appendChild(renderEquip());
+  else frag.appendChild(renderBuildInfo());
+
+  return frag;
+}
+
+function renderRoadmap() {
+  const frag = document.createDocumentFragment();
+
+  // Phase filter
+  const nav = h('div',{class:'phase-nav'});
+  nav.appendChild(h('div',{class:'phase-btn'+(state.buildPhase===0?' active':''),onClick:()=>{state.buildPhase=0;render();}},'ALL'));
+  PHASE_INFO.forEach(p => {
+    const pLevels = LEVELS.filter(l=>l[3]===p.num);
+    const pDone = pLevels.filter(l=>state.lvl[l[0]]).length;
+    nav.appendChild(h('div',{class:'phase-btn'+(state.buildPhase===p.num?' active':''),style:{borderBottomColor:state.buildPhase===p.num?p.color:undefined,color:state.buildPhase===p.num?p.color:undefined},
+      onClick:()=>{state.buildPhase=p.num;render();}},
+      'P'+p.num+(pDone===pLevels.length?' ✓':'')
+    ));
+  });
+  frag.appendChild(nav);
+
+  // Level rows
+  const grid = h('div',{class:'level-grid'});
+  const filtered = state.buildPhase === 0 ? LEVELS : LEVELS.filter(l => l[3] === state.buildPhase);
+  let lastPhase = 0;
+
+  filtered.forEach(([sl, stat, val, phase, note]) => {
+    if (phase !== lastPhase) {
+      const pi = PHASE_INFO[phase-1];
+      grid.appendChild(h('div',{class:'phase-header'},
+        h('div',{class:'dot',style:{background:pi.color}}),
+        h('div',{class:'label'},'Phase '+pi.num+': '+pi.name),
+        h('div',{class:'range'},pi.range)
+      ));
+      lastPhase = phase;
+    }
+
+    const done = state.lvl[sl];
+    const isMilestone = note && note.startsWith('★');
+    const pi = PHASE_INFO[phase-1];
+
+    const row = h('div',{class:'lvl-row'+(done?' done':'')+(isMilestone?' milestone':''),onClick:()=>toggleLvl(sl)},
+      h('div',{class:'sl'},'SL'+sl),
+      h('div',{class:'phase-dot',style:{background:pi.color}}),
+      h('div',{class:'stat-name',style:{color:STAT_COLORS[stat]}},stat),
+      h('div',{class:'arrow'},'→'),
+      h('div',{class:'new-val',style:{color:STAT_COLORS[stat]}},String(val)),
+      h('div',{class:'note'},note||''),
+      h('div',{class:'chk'},done?'✓':'·')
+    );
+    grid.appendChild(row);
+  });
+
+  // Quick-fill buttons
+  const qf = h('div',{style:{display:'flex',gap:'6px',padding:'10px 8px',flexWrap:'wrap'}});
+  PHASE_INFO.forEach(pi => {
+    const pLevels = LEVELS.filter(l=>l[3]===pi.num);
+    const pDone = pLevels.filter(l=>state.lvl[l[0]]).length;
+    if (pDone < pLevels.length) {
+      qf.appendChild(h('div',{style:{padding:'4px 10px',fontSize:'9px',background:'var(--card)',border:'1px solid var(--border)',borderRadius:'4px',cursor:'pointer',color:pi.color,fontFamily:"'Cinzel',serif"},
+        onClick:()=>{pLevels.forEach(l=>state.lvl[l[0]]=true);save();render();}},
+        'Fill P'+pi.num
+      ));
+    }
+  });
+  qf.appendChild(h('div',{style:{padding:'4px 10px',fontSize:'9px',background:'var(--card)',border:'1px solid #3a1515',borderRadius:'4px',cursor:'pointer',color:'#ef4444',fontFamily:"'Cinzel',serif"},
+    onClick:()=>{state.lvl={};save();render();}},
+    'Reset All'
+  ));
+  grid.appendChild(qf);
+
+  frag.appendChild(grid);
+  return frag;
+}
+
+function renderEquip() {
+  const frag = document.createDocumentFragment();
+  const sec = h('div',{class:'equip-section'});
+
+  sec.appendChild(h('div',{class:'equip-title'},'WEAPONS'));
+  [
+    ['Dark Uchigatana +10','Primary melee','Phase 4+','var(--purple)'],
+    ['Lightning Mace +10','Dark-resist swap','Phase 5+','var(--gold)'],
+    ['Fire Longsword +10','Versatile backup','Phase 1+','var(--ember)'],
+    ['Sunset Staff (dark)','Best hex catalyst','Phase 3+','var(--purple)'],
+    ['Staff of Wisdom','Sorcery catalyst','Phase 6+','#3b82f6'],
+    ['Pyromancy Flame +10','Fire BNS scaling','Phase 4+','var(--ember)'],
+  ].forEach(([name,role,when,color]) => {
+    sec.appendChild(h('div',{class:'equip-card'},
+      h('div',{style:{width:'4px',height:'24px',borderRadius:'2px',background:color,flexShrink:0}}),
+      h('div',{style:{flex:1}},
+        h('div',{class:'ename'},name),
+        h('div',{class:'role'},role)
+      ),
+      h('div',{style:{fontSize:'9px',color:'var(--dim)'}},when)
+    ));
+  });
+
+  sec.appendChild(h('div',{class:'equip-title'},'SPELLS'));
+  [
+    ['Dark Orb','Hex','Bread & butter ranged','var(--purple)'],
+    ['Dark Weapon','Hex','Melee buff (scales off base AR)','var(--purple)'],
+    ['Great Heavy Soul Arrow','Sorcery','When dark resisted','#3b82f6'],
+    ['Flame Swathe','Pyromancy','Massive AoE fire nuke','var(--ember)'],
+    ['Resonant Soul','Hex','Costs souls, hits HARD','var(--purple)'],
+    ['Great Fireball','Pyromancy','Ranged fire option','var(--ember)'],
+    ['Sunlight Blade','Miracle','Lightning buff (spice to 30)','var(--gold)'],
+  ].forEach(([name,school,desc,color]) => {
+    sec.appendChild(h('div',{class:'equip-card'},
+      h('div',{style:{width:'4px',height:'24px',borderRadius:'2px',background:color,flexShrink:0}}),
+      h('div',{style:{flex:1}},
+        h('div',{class:'ename'},name),
+        h('div',{class:'role'},school+' — '+desc)
+      )
+    ));
+  });
+
+  sec.appendChild(h('div',{class:'equip-title'},'KEY RINGS'));
+  [
+    ['Third Dragon Ring','+12.5% HP/Stam/Load — best general ring'],
+    ['Clear Bluestone Ring +2','Faster casting speed'],
+    ['Ring of Blades +1/+2','Flat physical AR bonus'],
+    ['Chloranthy Ring +1/+2','Stamina regen for melee'],
+    ['Southern Ritual Band +1/+2','Extra spell slots'],
+    ['Dark Clutch Ring','+15% dark dmg (boss swaps)'],
+  ].forEach(([name,desc]) => {
+    sec.appendChild(h('div',{class:'equip-card'},
+      h('div',{style:{width:'4px',height:'24px',borderRadius:'2px',background:'var(--dim)',flexShrink:0}}),
+      h('div',{style:{flex:1}},
+        h('div',{class:'ename'},name),
+        h('div',{class:'role'},desc)
+      )
+    ));
+  });
+
+  frag.appendChild(sec);
+  return frag;
+}
+
+function renderBuildInfo() {
+  const frag = document.createDocumentFragment();
+
+  const info = h('div',{style:{padding:'12px'}});
+
+  info.appendChild(h('div',{class:'info-box'},
+    h('div',{style:{fontFamily:"'Cinzel',serif",color:'var(--gold)',marginBottom:'6px',fontSize:'12px'}},'BUILD PHILOSOPHY'),
+    'You are a dark-buffed katana user with access to all 4 magic schools. Dark Orb is your ranged option, not your identity. ',
+    'The Uchigatana + Dark Weapon buff is primary damage. Swap to Lightning Mace or Fire Longsword when dark is resisted. ',
+    'Five damage types, one build.'
+  ));
+
+  info.appendChild(h('div',{class:'info-box',style:{marginTop:'8px'}},
+    h('div',{style:{fontFamily:"'Cinzel',serif",color:'var(--gold)',marginBottom:'6px',fontSize:'12px'}},'WHY SORCERER CLASS'),
+    'INT 14, ATN 12 (2 slots), staff included. Zero wasted stats. Functional caster from bonfire #1. ',
+    'Same final SL as Deprived but with a 10-level head start on INT and ATN.'
+  ));
+
+  info.appendChild(h('div',{class:'info-box',style:{marginTop:'8px'}},
+    h('div',{style:{fontFamily:"'Cinzel',serif",color:'var(--gold)',marginBottom:'6px',fontSize:'12px'}},'AGILITY MATH'),
+    'Formula: AGI = ((ATN + 3×ADP) / 4) + 80',
+    h('br'),
+    'ATN 43 + ADP 13 → (43+39)/4 + 80 = 100.5 → displays 100 AGI',
+    h('br'),
+    '100 AGI = 11 roll i-frames + fastest Estus chug speed',
+    h('br'),
+    'Only need ADP 13 (5 pts!) because high ATN does the heavy lifting.'
+  ));
+
+  info.appendChild(h('div',{class:'info-box',style:{marginTop:'8px'}},
+    h('div',{style:{fontFamily:"'Cinzel',serif",color:'var(--gold)',marginBottom:'6px',fontSize:'12px'}},'BOSS ELEMENT STRATEGY'),
+    h('div',{style:{color:'var(--green)',marginBottom:'4px'}},'Dark-Weak (default): Most bosses — use Dark Uchi + Dark Weapon'),
+    h('div',{style:{color:'var(--ember)',marginBottom:'4px'}},'Dark-Resistant: Pursuer (fire), Velstadt (lightning), Darklurker (FIRE), Nashandra (lightning)'),
+    h('div',{style:{color:'var(--purple)'}},'DLC: Elana/Sinh/Fume Knight/Alonne (lightning), Aava/Ivory King (fire/lightning)')
+  ));
+
+  info.appendChild(h('div',{class:'info-box',style:{marginTop:'8px'}},
+    h('div',{style:{fontFamily:"'Cinzel',serif",color:'var(--gold)',marginBottom:'6px',fontSize:'12px'}},'AFTER SL 150 (OVERFLOW)'),
+    'No cap — keep leveling. Priority: VGR→35, INT/FTH→40 (second soft caps), END→25, ATN→50 (8th slot).'
+  ));
+
+  frag.appendChild(info);
+  return frag;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN RENDER
+// ═══════════════════════════════════════════════════════════
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  // Header
+  const hdr = h('div',{class:'header'});
+  hdr.appendChild(h('h1',null,'DS2 SotFS'));
+  hdr.appendChild(h('div',{class:'sub'},'100% Progression Engine — Dark Hexer Build'));
+  app.appendChild(hdr);
+
+  // Tabs
+  const tabs = h('div',{class:'tabs'});
+  [['dash','Dashboard'],['areas','Areas'],['quests','Quests'],['trackers','Trackers'],['build','Build']].forEach(([id,label]) => {
+    tabs.appendChild(h('div',{class:'tab'+(state.tab===id?' active':''),onClick:()=>{state.tab=id;render();}},label));
+  });
+  app.appendChild(tabs);
+
+  // Content
+  const content = h('div',{class:'content'});
+  switch(state.tab) {
+    case 'dash': content.appendChild(renderDash()); break;
+    case 'areas': content.appendChild(renderArea()); break;
+    case 'quests': content.appendChild(renderQuests()); break;
+    case 'trackers': content.appendChild(renderTrackers()); break;
+    case 'build': content.appendChild(renderBuild()); break;
+  }
+  app.appendChild(content);
+}
+
+// Init
+load();
+render();
+</script>
+</body>
+</html>

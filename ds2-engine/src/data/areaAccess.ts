@@ -1,0 +1,33 @@
+import type { AreaId } from "./areas";
+
+/** How to initially access each area. */
+export const AREA_ACCESS: Record<AreaId, string> = {
+  things_betwixt: "Start of game — first area after character creation.",
+  majula: "Exit Things Betwixt through the tunnel at the end.",
+  forest_of_fallen_giants: "From Majula — path near the bonfire, past the cliff.",
+  heides_tower: "From Majula — path down the stairs past the monument.",
+  no_mans_wharf: "From Heide's Tower — take the path to the right after Old Dragonslayer, pull the lever to call the ship.",
+  lost_bastille: "Two routes: (1) Bird nest after Pursuer in Forest of Fallen Giants. (2) Ship from No-Man's Wharf.",
+  huntsmans_copse: "Pay Licia 2,000 souls at the Majula rotunda (after Dragonrider) to rotate the path.",
+  harvest_valley: "From Huntsman's Copse — through the tunnel after Executioner's Chariot.",
+  earthen_peak: "From Harvest Valley — up the path past Covetous Demon.",
+  iron_keep: "From Earthen Peak — cross the bridge after Mytha.",
+  the_pit: "Majula Pit — use Silvercat Ring (13,400 from Shalquoir) or buy ladder from Gilligan (12,000 souls).",
+  the_gutter: "From The Pit — drop down through Grave of Saints, continue descending.",
+  black_gulch: "From The Gutter — exit at the bottom, past the wooden structures.",
+  shaded_woods: "From Majula — path past the monument. Use Fragrant Branch on Rosabeth to unblock.",
+  doors_of_pharros: "From Shaded Woods — take the middle path at the fork (past the foggy area).",
+  brightstone_cove: "From Shaded Woods — take the path to the right at the fork (toward Tseldora).",
+  sinners_rise: "From Lost Bastille — take the elevator down from the Tower Apart area.",
+  drangleic_castle: "Shrine of Winter — need 4 Lord Souls (or 1M+ Soul Memory in NG) to open the path from Shaded Woods.",
+  shrine_of_amana: "From Drangleic Castle — through the King's Gate after Looking Glass Knight.",
+  undead_crypt: "From Shrine of Amana — through the Demon of Song boss area.",
+  aldias_keep: "Use King's Ring on the King's Gate in Shaded Woods (path to the right of the fork).",
+  dragon_aerie: "From Aldia's Keep — defeat Guardian Dragon, take the path beyond.",
+  memories: "Use Ashen Mist Heart at the giant trees (after Ancient Dragon in Dragon Shrine).",
+  dark_chasm: "Enter at each of Grandahl's 3 locations (Black Gulch, Shaded Woods, Drangleic Castle) — costs 1 Human Effigy each.",
+  throne_of_want: "From Shrine of Amana — through the King's Gate after obtaining the King's Ring.",
+  dlc_sunken: "Primal Bonfire in Black Gulch — interact after defeating The Rotten.",
+  dlc_iron: "Primal Bonfire in Iron Keep — interact after defeating Old Iron King.",
+  dlc_ivory: "Shrine of Winter — use the key from Frozen Flower (after defeating the 4 main bosses). Frozen Flower found in Drangleic Castle.",
+};

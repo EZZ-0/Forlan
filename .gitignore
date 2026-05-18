@@ -1,0 +1,48 @@
+# Dependencies (reinstall with npm install)
+node_modules/
+**/node_modules/
+
+# Built app (recreate with npm run build)
+dist/
+**/dist/
+dist-ssr/
+
+# Your personal save file at the project root (use Export inside the app)
+/ds2_progress.json
+
+# Old duplicate folder — do not publish
+DS2 guide - Copy/
+
+# Cursor agent plans (not needed to run the app)
+.cursor/
+
+# Logs and temp files
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.local
+
+# Environment files (the app does not use these; listed for safety)
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor settings
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Large PDFs — the walkthrough is already in DS2_SotFS_100_Percent_Walkthrough.md
+*.pdf
+
+# Optional personal notes folder
+Playthroughs/

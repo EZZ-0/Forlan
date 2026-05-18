@@ -1,0 +1,100 @@
+/**
+ * DS2 Items Database — Armor.
+ * Seed from simulator (Hexer set).
+ */
+
+import type { ItemDatabaseEntry } from "../types";
+
+export const DB_ARMOR: ItemDatabaseEntry[] = [
+  {
+    id: "hexer_hood",
+    name: "Hexer's Hood",
+    category: "armor",
+    subcategory: { slot: "helm" },
+    weight: 1.4,
+    stats: { resistances: { physical: 17, magic: 23, fire: 18, lightning: 18, dark: 25 }, poise: 2 },
+    location: { sourceType: "gift", unlockRequirement: "Felkin 20/20" },
+    guidance: {
+      where: "Felkin (Huntsman's Copse) — gift with 20 INT / 20 FTH BASE",
+      howToGetThere: "Reach Huntsman's Copse. Felkin gives full Hexer set when you have 20/20 base stats.",
+      howToObtain: "Talk to Felkin with 20 INT and 20 FTH at base.",
+    },
+    buildRelevance: { phase: 3, role: "Hexer set", progressId: "build:sunset_staff" },
+    rarity: "unique",
+    dlc: "base",
+    source: "manual",
+  },
+  {
+    id: "hexer_robe",
+    name: "Hexer's Robe",
+    category: "armor",
+    subcategory: { slot: "chest" },
+    weight: 3.2,
+    stats: { resistances: { physical: 45, magic: 52, fire: 38, lightning: 38, dark: 58 }, poise: 8 },
+    location: { sourceType: "gift", unlockRequirement: "Felkin 20/20" },
+    guidance: {
+      where: "Felkin (Huntsman's Copse) — gift with 20 INT / 20 FTH BASE",
+      howToGetThere: "Reach Huntsman's Copse. Felkin gives full Hexer set.",
+      howToObtain: "Talk to Felkin with 20/20 base stats.",
+    },
+    buildRelevance: { phase: 3, role: "Hexer set", progressId: "build:sunset_staff" },
+    rarity: "unique",
+    dlc: "base",
+    source: "manual",
+  },
+  {
+    id: "hexer_gloves",
+    name: "Hexer's Gloves",
+    category: "armor",
+    subcategory: { slot: "gloves" },
+    weight: 0.8,
+    stats: { resistances: { physical: 12, magic: 15, fire: 12, lightning: 12, dark: 18 }, poise: 1 },
+    location: { sourceType: "gift", unlockRequirement: "Felkin 20/20" },
+    guidance: {
+      where: "Felkin (Huntsman's Copse) — gift with 20 INT / 20 FTH BASE",
+      howToGetThere: "Reach Huntsman's Copse. Felkin gives full Hexer set.",
+      howToObtain: "Talk to Felkin with 20/20 base stats.",
+    },
+    buildRelevance: { phase: 3, role: "Hexer set", progressId: "build:sunset_staff" },
+    rarity: "unique",
+    dlc: "base",
+    source: "manual",
+  },
+  {
+    id: "penal_gauntlets",
+    name: "Penal Handcuffs",
+    category: "armor",
+    subcategory: { slot: "gloves" },
+    weight: 0.9,
+    effects: { pyromancyDamage: "7.5%" },
+    stats: { resistances: { physical: 8, magic: 10, fire: 12, lightning: 8, dark: 8 }, poise: 0 },
+    location: { sourceType: "corpse", areaId: "undead_crypt" },
+    guidance: {
+      where: "Undead Crypt — boss corridor corpse",
+      howToGetThere: "Reach Undead Crypt. Corpse in corridor before Velstadt.",
+      howToObtain: "Pick up from corpse.",
+    },
+    buildRelevance: { "inferno-reaper": { phase: 3, role: "+7.5% pyromancy damage", progressId: "ir:penal_handcuffs" } },
+    rarity: "unique",
+    dlc: "base",
+    source: "manual",
+  },
+  {
+    id: "hexer_boots",
+    name: "Hexer's Boots",
+    category: "armor",
+    subcategory: { slot: "legs" },
+    weight: 1.6,
+    stats: { resistances: { physical: 22, magic: 26, fire: 20, lightning: 20, dark: 30 }, poise: 3 },
+    location: { sourceType: "gift", unlockRequirement: "Felkin 20/20" },
+    guidance: {
+      where: "Felkin (Huntsman's Copse) — gift with 20 INT / 20 FTH BASE",
+      howToGetThere: "Reach Huntsman's Copse. Felkin gives full Hexer set.",
+      howToObtain: "Talk to Felkin with 20/20 base stats.",
+    },
+    buildRelevance: { phase: 3, role: "Hexer set", progressId: "build:sunset_staff" },
+    rarity: "unique",
+    dlc: "base",
+    source: "manual",
+  },
+];

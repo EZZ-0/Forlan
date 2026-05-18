@@ -1,0 +1,13 @@
+{
+  "name": "ds2-sotfs-progression-engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fan-made 100% checklist for Dark Souls 2 Scholar of the First Sin",
+  "scripts": {
+    "install:engine": "npm install --prefix ds2-engine",
+    "dev": "npm run dev --prefix ds2-engine",
+    "build": "npm run build --prefix ds2-engine",
+    "preview": "npm run preview --prefix ds2-engine",
+    "start": "npm install --prefix ds2-engine && npm run dev --prefix ds2-engine"
+  }
+}

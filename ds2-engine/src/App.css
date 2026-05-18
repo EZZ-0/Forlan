@@ -1,0 +1,238 @@
+/* DS2 Engine — Dark Souls aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+/* Remove default white/light borders and focus rings (inline styles override base) */
+button, input, select, textarea, kbd {
+  border: none;
+  outline: none;
+}
+
+button:focus, button:focus-visible,
+input:focus, input:focus-visible,
+select:focus, select:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  font-family: 'EB Garamond', Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2420;
+  border-radius: 6px;
+}
+
+/* Loading — kindling the bonfire */
+@keyframes kindleGlow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.loading-kindle {
+  animation: kindleGlow 1.5s ease-in-out infinite;
+}
+
+/* Desktop layout — use full width */
+.app-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Dashboard grid: 2 columns on desktop, 1 on narrow */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Area view: two-panel on desktop, single column on narrow */
+.area-two-panel {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(300px, 400px);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .area-two-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Areas tab: hybrid layout — collapsible sidebar + 2x2 fixed equal quadrants */
+.area-hybrid-layout {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  min-height: 0;
+}
+
+.area-sidebar-wrapper {
+  display: flex;
+  flex-shrink: 0;
+  transition: width 0.2s ease;
+  position: relative;
+}
+
+.area-sidebar-wrapper.collapsed {
+  width: 40px;
+}
+
+.area-sidebar-wrapper:not(.collapsed) {
+  width: 200px;
+}
+
+.area-sidebar {
+  width: 200px;
+  overflow-y: auto;
+  max-height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.area-sidebar-wrapper.collapsed .area-sidebar {
+  width: 40px;
+  overflow: hidden;
+  max-height: none;
+}
+
+.area-sidebar-wrapper.collapsed .area-cards-grid,
+.area-sidebar-wrapper.collapsed .area-sidebar-input {
+  display: none !important;
+}
+
+.area-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.area-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 2 columns x 3 rows — main area grid, each cell same size, content scrolls inside */
+.area-quadrants-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 340px);
+  gap: 16px;
+}
+
+.area-quadrant {
+  min-height: 340px;
+  overflow-y: auto;
+  background: #1a1714;
+  border: 1px solid #2a2420;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Floating box for right panel (notes, farming, drops) */
+.area-floating-box {
+  background: #1a1714;
+  border: 1px solid #2a2420;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+/* Area tab typography — improved readability, no data cut off */
+.area-quadrant,
+.area-floating-box {
+  font-size: 13px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+.area-quadrant .section-panel-content,
+.area-floating-box .section-panel-content {
+  padding: 14px 16px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.area-floating-box.area-build-box {
+  padding: 14px 16px;
+}
+
+/* Responsive: sidebar above on tablet */
+@media (max-width: 900px) {
+  .area-hybrid-layout {
+    flex-direction: column;
+  }
+  .area-sidebar-wrapper {
+    width: 100% !important;
+    max-height: 180px;
+  }
+  .area-sidebar-wrapper.collapsed {
+    width: 100% !important;
+    max-height: 40px;
+  }
+  .area-sidebar {
+    width: 100%;
+    max-height: 160px;
+  }
+  .area-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Mobile: 1 column, rows auto */
+@media (max-width: 600px) {
+  .area-quadrants-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 300px;
+  }
+  .area-quadrant {
+    min-height: 300px;
+  }
+  .area-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Simulator: two columns on desktop, stack on mobile */
+@media (max-width: 768px) {
+  .simulator-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -1,0 +1,69 @@
+@page {
+  margin: 0;
+  size: A4;
+}
+* {
+  color: #ffffff !important;
+  border-color: #444 !important;
+  box-sizing: border-box;
+}
+/* Full black — no white border */
+html {
+  background: #000000 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+}
+body {
+  background: #000000 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  padding: 15mm 18mm !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+}
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff !important;
+}
+p, li, td, th, span, div {
+  color: #ffffff !important;
+}
+table {
+  border-collapse: collapse;
+}
+table td, table th {
+  border: 1px solid #444 !important;
+  color: #ffffff !important;
+}
+table tr:nth-child(even) {
+  background: #111 !important;
+}
+table tr:nth-child(odd) {
+  background: #0a0a0a !important;
+}
+blockquote {
+  border-left-color: #444 !important;
+  color: #cccccc !important;
+}
+a {
+  color: #88aaff !important;
+}
+code {
+  background: #222 !important;
+  color: #ffffff !important;
+  border: 1px solid #444 !important;
+}
+pre {
+  background: #111 !important;
+  color: #ffffff !important;
+  border: 1px solid #444 !important;
+}
+
+/* Fill page width — no narrow column */
+body > *, .markdown-pdf, [id="pdf-wrap"], #content {
+  max-width: none !important;
+  width: 100% !important;
+}

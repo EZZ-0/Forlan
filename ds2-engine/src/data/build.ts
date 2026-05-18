@@ -1,0 +1,235 @@
+// Dark Melee Hexer — Hybrid + Adaptive build
+// Revised roadmap with END distributed earlier (Phase 2-3)
+// Base: Sorcerer (SL 11) — VGR:5, END:6, VIT:5, ATN:12, STR:3, DEX:7, ADP:8, INT:14, FTH:4
+
+export const BASE_STATS: Record<string, number> = {
+  VGR: 5,
+  END: 6,
+  VIT: 5,
+  ATN: 12,
+  STR: 3,
+  DEX: 7,
+  ADP: 8,
+  INT: 14,
+  FTH: 4,
+};
+
+/** Max SL when build is complete (SL 11 + 140 level-ups) */
+export const MAX_SL = 151;
+
+export const PHASE_TARGETS: Record<number, Record<string, number>> = {
+  1: { STR: 7, DEX: 9, VGR: 10, ATN: 14, END: 8 },
+  2: { FTH: 8, ATN: 16, VGR: 15, END: 10 },
+  3: { INT: 20, FTH: 20, VGR: 17, END: 12 },
+  4: { STR: 14, DEX: 20, INT: 28, FTH: 28, VGR: 18 },
+  5: { INT: 30, FTH: 30, END: 15, ADP: 13, ATN: 25, VGR: 21 },
+  6: { ATN: 43, VGR: 25, END: 20, VIT: 8 },
+};
+
+// Priority order within each phase for adaptive "next level" suggestion
+export const PHASE_PRIORITY: Record<number, string[]> = {
+  1: ["STR", "DEX", "VGR", "END", "ATN"],
+  2: ["FTH", "END", "ATN", "VGR"],
+  3: ["INT", "FTH", "VGR", "END"],
+  4: ["STR", "DEX", "INT", "FTH", "VGR"],
+  5: ["INT", "FTH", "VGR", "END", "ADP", "ATN"],
+  6: ["ATN", "VGR", "END", "VIT"],
+};
+
+// [SL, stat, newValue, phase, note]
+export interface LevelEntry {
+  sl: number;
+  stat: string;
+  value: number;
+  phase: number;
+  note: string;
+}
+
+export const LEVELS: LevelEntry[] = [
+  // Phase 1: SL 12-24 — Fire Longsword + Survive (END added earlier)
+  { sl: 12, stat: "STR", value: 4, phase: 1, note: "" },
+  { sl: 13, stat: "STR", value: 5, phase: 1, note: "" },
+  { sl: 14, stat: "STR", value: 6, phase: 1, note: "" },
+  { sl: 15, stat: "STR", value: 7, phase: 1, note: "★ Can 2H Fire Longsword" },
+  { sl: 16, stat: "END", value: 7, phase: 1, note: "" },
+  { sl: 17, stat: "END", value: 8, phase: 1, note: "" },
+  { sl: 18, stat: "DEX", value: 8, phase: 1, note: "" },
+  { sl: 19, stat: "DEX", value: 9, phase: 1, note: "★ Can 1H Fire Longsword" },
+  { sl: 20, stat: "VGR", value: 6, phase: 1, note: "" },
+  { sl: 21, stat: "VGR", value: 7, phase: 1, note: "" },
+  { sl: 22, stat: "VGR", value: 8, phase: 1, note: "" },
+  { sl: 23, stat: "VGR", value: 9, phase: 1, note: "" },
+  { sl: 24, stat: "VGR", value: 10, phase: 1, note: "" },
+  { sl: 25, stat: "ATN", value: 13, phase: 1, note: "" },
+  { sl: 26, stat: "ATN", value: 14, phase: 1, note: "" },
+  // Phase 2: SL 27-37 — Felkin + Dark Orb (END 10)
+  { sl: 27, stat: "FTH", value: 5, phase: 2, note: "" },
+  { sl: 28, stat: "FTH", value: 6, phase: 2, note: "" },
+  { sl: 29, stat: "FTH", value: 7, phase: 2, note: "" },
+  { sl: 30, stat: "FTH", value: 8, phase: 2, note: "★ Felkin hex shop open — buy Dark Orb" },
+  { sl: 31, stat: "END", value: 9, phase: 2, note: "" },
+  { sl: 32, stat: "END", value: 10, phase: 2, note: "" },
+  { sl: 33, stat: "ATN", value: 15, phase: 2, note: "" },
+  { sl: 34, stat: "ATN", value: 16, phase: 2, note: "★ 3 spell slots" },
+  { sl: 35, stat: "VGR", value: 11, phase: 2, note: "" },
+  { sl: 36, stat: "VGR", value: 12, phase: 2, note: "" },
+  { sl: 37, stat: "VGR", value: 13, phase: 2, note: "" },
+  { sl: 38, stat: "VGR", value: 14, phase: 2, note: "" },
+  { sl: 39, stat: "VGR", value: 15, phase: 2, note: "" },
+  // Phase 3: SL 40-59 — 20/20 Rush
+  { sl: 40, stat: "INT", value: 15, phase: 3, note: "" },
+  { sl: 41, stat: "FTH", value: 9, phase: 3, note: "" },
+  { sl: 42, stat: "INT", value: 16, phase: 3, note: "" },
+  { sl: 43, stat: "FTH", value: 10, phase: 3, note: "" },
+  { sl: 44, stat: "INT", value: 17, phase: 3, note: "" },
+  { sl: 45, stat: "FTH", value: 11, phase: 3, note: "" },
+  { sl: 46, stat: "INT", value: 18, phase: 3, note: "" },
+  { sl: 47, stat: "FTH", value: 12, phase: 3, note: "" },
+  { sl: 48, stat: "INT", value: 19, phase: 3, note: "" },
+  { sl: 49, stat: "FTH", value: 13, phase: 3, note: "" },
+  { sl: 50, stat: "INT", value: 20, phase: 3, note: "INT 20 ✓" },
+  { sl: 51, stat: "FTH", value: 14, phase: 3, note: "" },
+  { sl: 52, stat: "FTH", value: 15, phase: 3, note: "" },
+  { sl: 53, stat: "FTH", value: 16, phase: 3, note: "" },
+  { sl: 54, stat: "FTH", value: 17, phase: 3, note: "" },
+  { sl: 55, stat: "FTH", value: 18, phase: 3, note: "" },
+  { sl: 56, stat: "FTH", value: 19, phase: 3, note: "" },
+  { sl: 57, stat: "FTH", value: 20, phase: 3, note: "★ 20/20! FREE Sunset Staff + Hexer Set" },
+  { sl: 58, stat: "VGR", value: 16, phase: 3, note: "" },
+  { sl: 59, stat: "VGR", value: 17, phase: 3, note: "" },
+  { sl: 60, stat: "END", value: 11, phase: 3, note: "" },
+  { sl: 61, stat: "END", value: 12, phase: 3, note: "" },
+  // Phase 4: SL 62-96 — Dark Melee Online
+  { sl: 62, stat: "STR", value: 8, phase: 4, note: "" },
+  { sl: 63, stat: "STR", value: 9, phase: 4, note: "" },
+  { sl: 64, stat: "STR", value: 10, phase: 4, note: "" },
+  { sl: 65, stat: "STR", value: 11, phase: 4, note: "" },
+  { sl: 66, stat: "STR", value: 12, phase: 4, note: "" },
+  { sl: 67, stat: "STR", value: 13, phase: 4, note: "" },
+  { sl: 68, stat: "STR", value: 14, phase: 4, note: "★ STR target — all medium weapons" },
+  { sl: 69, stat: "DEX", value: 10, phase: 4, note: "" },
+  { sl: 70, stat: "DEX", value: 11, phase: 4, note: "" },
+  { sl: 71, stat: "DEX", value: 12, phase: 4, note: "" },
+  { sl: 72, stat: "DEX", value: 13, phase: 4, note: "" },
+  { sl: 73, stat: "DEX", value: 14, phase: 4, note: "" },
+  { sl: 74, stat: "DEX", value: 15, phase: 4, note: "" },
+  { sl: 75, stat: "DEX", value: 16, phase: 4, note: "" },
+  { sl: 76, stat: "DEX", value: 17, phase: 4, note: "" },
+  { sl: 77, stat: "DEX", value: 18, phase: 4, note: "" },
+  { sl: 78, stat: "DEX", value: 19, phase: 4, note: "" },
+  { sl: 79, stat: "DEX", value: 20, phase: 4, note: "★ Uchigatana! Dark infuse at McDuff" },
+  { sl: 80, stat: "INT", value: 21, phase: 4, note: "" },
+  { sl: 81, stat: "FTH", value: 21, phase: 4, note: "" },
+  { sl: 82, stat: "INT", value: 22, phase: 4, note: "" },
+  { sl: 83, stat: "FTH", value: 22, phase: 4, note: "" },
+  { sl: 84, stat: "INT", value: 23, phase: 4, note: "" },
+  { sl: 85, stat: "FTH", value: 23, phase: 4, note: "" },
+  { sl: 86, stat: "INT", value: 24, phase: 4, note: "" },
+  { sl: 87, stat: "FTH", value: 24, phase: 4, note: "" },
+  { sl: 88, stat: "INT", value: 25, phase: 4, note: "" },
+  { sl: 89, stat: "FTH", value: 25, phase: 4, note: "" },
+  { sl: 90, stat: "INT", value: 26, phase: 4, note: "" },
+  { sl: 91, stat: "FTH", value: 26, phase: 4, note: "" },
+  { sl: 92, stat: "INT", value: 27, phase: 4, note: "" },
+  { sl: 93, stat: "FTH", value: 27, phase: 4, note: "" },
+  { sl: 94, stat: "INT", value: 28, phase: 4, note: "" },
+  { sl: 95, stat: "FTH", value: 28, phase: 4, note: "" },
+  { sl: 96, stat: "VGR", value: 18, phase: 4, note: "" },
+  // Phase 5: SL 97-121 — 30/30 + Diversify
+  { sl: 97, stat: "INT", value: 29, phase: 5, note: "" },
+  { sl: 98, stat: "FTH", value: 29, phase: 5, note: "" },
+  { sl: 99, stat: "INT", value: 30, phase: 5, note: "★ INT 30 — dark soft cap!" },
+  { sl: 100, stat: "FTH", value: 30, phase: 5, note: "★ FTH 30 — DARK MAXIMIZED" },
+  { sl: 101, stat: "VGR", value: 19, phase: 5, note: "" },
+  { sl: 102, stat: "VGR", value: 20, phase: 5, note: "" },
+  { sl: 103, stat: "VGR", value: 21, phase: 5, note: "" },
+  { sl: 104, stat: "END", value: 13, phase: 5, note: "" },
+  { sl: 105, stat: "END", value: 14, phase: 5, note: "" },
+  { sl: 106, stat: "END", value: 15, phase: 5, note: "" },
+  { sl: 107, stat: "ADP", value: 9, phase: 5, note: "" },
+  { sl: 108, stat: "ADP", value: 10, phase: 5, note: "" },
+  { sl: 109, stat: "ADP", value: 11, phase: 5, note: "" },
+  { sl: 110, stat: "ADP", value: 12, phase: 5, note: "" },
+  { sl: 111, stat: "ADP", value: 13, phase: 5, note: "★ ADP done (AGI 96 w/ ATN 25)" },
+  { sl: 112, stat: "ATN", value: 17, phase: 5, note: "" },
+  { sl: 113, stat: "ATN", value: 18, phase: 5, note: "" },
+  { sl: 114, stat: "ATN", value: 19, phase: 5, note: "" },
+  { sl: 115, stat: "ATN", value: 20, phase: 5, note: "★ 4 spell slots" },
+  { sl: 116, stat: "ATN", value: 21, phase: 5, note: "" },
+  { sl: 117, stat: "ATN", value: 22, phase: 5, note: "" },
+  { sl: 118, stat: "ATN", value: 23, phase: 5, note: "" },
+  { sl: 119, stat: "ATN", value: 24, phase: 5, note: "" },
+  { sl: 120, stat: "ATN", value: 25, phase: 5, note: "★ 5 spell slots" },
+  { sl: 121, stat: "VGR", value: 21, phase: 5, note: "" },
+  // Phase 6: SL 122-151 — Complete Build
+  { sl: 122, stat: "ATN", value: 26, phase: 6, note: "" },
+  { sl: 123, stat: "ATN", value: 27, phase: 6, note: "" },
+  { sl: 124, stat: "ATN", value: 28, phase: 6, note: "" },
+  { sl: 125, stat: "ATN", value: 29, phase: 6, note: "" },
+  { sl: 126, stat: "ATN", value: 30, phase: 6, note: "★ 6 slots (AGI ~98)" },
+  { sl: 127, stat: "VGR", value: 22, phase: 6, note: "" },
+  { sl: 128, stat: "VGR", value: 23, phase: 6, note: "" },
+  { sl: 129, stat: "VGR", value: 24, phase: 6, note: "" },
+  { sl: 130, stat: "VGR", value: 25, phase: 6, note: "★ VGR target — ~1100 HP" },
+  { sl: 131, stat: "END", value: 16, phase: 6, note: "" },
+  { sl: 132, stat: "END", value: 17, phase: 6, note: "" },
+  { sl: 133, stat: "END", value: 18, phase: 6, note: "" },
+  { sl: 134, stat: "END", value: 19, phase: 6, note: "" },
+  { sl: 135, stat: "END", value: 20, phase: 6, note: "★ END target" },
+  { sl: 136, stat: "ATN", value: 31, phase: 6, note: "" },
+  { sl: 137, stat: "ATN", value: 32, phase: 6, note: "" },
+  { sl: 138, stat: "ATN", value: 33, phase: 6, note: "" },
+  { sl: 139, stat: "ATN", value: 34, phase: 6, note: "" },
+  { sl: 140, stat: "ATN", value: 35, phase: 6, note: "" },
+  { sl: 141, stat: "ATN", value: 36, phase: 6, note: "" },
+  { sl: 142, stat: "ATN", value: 37, phase: 6, note: "" },
+  { sl: 143, stat: "ATN", value: 38, phase: 6, note: "" },
+  { sl: 144, stat: "ATN", value: 39, phase: 6, note: "" },
+  { sl: 145, stat: "ATN", value: 40, phase: 6, note: "★ 7 slots (AGI ~99)" },
+  { sl: 146, stat: "VIT", value: 6, phase: 6, note: "" },
+  { sl: 147, stat: "VIT", value: 7, phase: 6, note: "" },
+  { sl: 148, stat: "VIT", value: 8, phase: 6, note: "★ VIT target" },
+  { sl: 149, stat: "ATN", value: 41, phase: 6, note: "" },
+  { sl: 150, stat: "ATN", value: 42, phase: 6, note: "" },
+  { sl: 151, stat: "ATN", value: 43, phase: 6, note: "★★ BUILD COMPLETE — AGI 100" },
+];
+
+export const PHASE_INFO = [
+  { num: 1, name: "Fire LS + Survive", range: "SL 11→26", color: "#6b7c52", areas: "Betwixt → FoFG" },
+  { num: 2, name: "Felkin + Dark Orb", range: "SL 26→39", color: "#7a8c62", areas: "Heide's → NMW" },
+  { num: 3, name: "20/20 → Sunset Staff", range: "SL 39→61", color: "#c8a030", areas: "Bastille → Harvest" },
+  { num: 4, name: "Dark Melee Online", range: "SL 61→96", color: "#d4862a", areas: "Earthen → Gulch" },
+  { num: 5, name: "30/30 + Diversify", range: "SL 96→121", color: "#c45a30", areas: "Shaded → Drangleic" },
+  { num: 6, name: "Complete Build", range: "SL 121→151", color: "#a03030", areas: "Amana → DLC" },
+];
+
+export const WEAPONS = [
+  { name: "Dark Uchigatana +10", role: "Primary melee", phase: 4, infusion: "Dark", stats: "14 STR / 20 DEX" },
+  { name: "Lightning Mace +10", role: "Dark-resistant swap", phase: 1, infusion: "Lightning", stats: "12 STR" },
+  { name: "Fire Longsword +10", role: "Early + fire backup", phase: 1, infusion: "Fire", stats: "10 STR / 9 DEX" },
+  { name: "Sunset Staff +5", role: "Primary dark catalyst", phase: 3, infusion: "Dark", stats: "22 INT / 22 FTH" },
+  { name: "Staff of Wisdom +5", role: "Pure sorcery catalyst", phase: 6, infusion: "Magic", stats: "50 INT (spiced)" },
+  { name: "Pyromancy Flame +10", role: "Fire spells", phase: 3, infusion: "N/A", stats: "None" },
+];
+
+export const SPELLS = [
+  { name: "Dark Orb", school: "Hex", purpose: "Primary ranged. 24 casts at ATN 43. Best value hex." },
+  { name: "Dark Weapon", school: "Hex", purpose: "Weapon buff. Huge damage boost on dark-infused weapons." },
+  { name: "Great Heavy Soul Arrow", school: "Sorcery", purpose: "Backup ranged. Different element." },
+  { name: "Flame Swathe", school: "Pyromancy", purpose: "Massive AoE nuke." },
+  { name: "Resonant Soul", school: "Hex", purpose: "Costs souls. Upgrade to Great Resonant Soul (Grandahl Rank 2) for more damage." },
+  { name: "Great Resonant Soul", school: "Hex", purpose: "Higher damage than Resonant Soul. Costs souls. Grandahl Pilgrims Rank 2." },
+  { name: "Great Fireball", school: "Pyromancy", purpose: "Fire AoE ranged." },
+  { name: "Sunlight Blade", school: "Miracle", purpose: "Lightning weapon buff (spiced to lower FTH req)." },
+];
+
+export const KEY_RINGS = [
+  { name: "Southern Ritual Band", effect: "+3 spell slots", source: "Brightstone Cove" },
+  { name: "Southern Ritual Band +2", effect: "+3 spell slots (upgrade)", source: "NG+ Scorpioness Najka" },
+  { name: "Clear Bluestone Ring +2", effect: "Cast speed", source: "Skeleton Lords (NG+ or Ascetic)" },
+  { name: "Ring of Blades", effect: "Flat physical AR", source: "Pursuer drop" },
+  { name: "Third Dragon Ring", effect: "HP/Stamina/Equip Load", source: "Dragon Shrine" },
+  { name: "Chloranthy Ring", effect: "Stamina regen", source: "FoFG" },
+  { name: "Dark Clutch Ring", effect: "Dark damage boost", source: "DLC area" },
+  { name: "Abyss Seal", effect: "Hex damage +20%, HP drain per cast", source: "Dark Chasm — Grandahl (Pilgrims Rank 2)" },
+];
