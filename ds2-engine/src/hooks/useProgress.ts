@@ -1,14 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { STORAGE_KEY, getProgressKey, type ProgressState } from "../types";
 import { DEFAULT_BUILD_TEMPLATE_ID } from "../data/buildTemplates";
+import {
+  emptyBuildProgressSlice,
+  getBuildLevels,
+  migrateProgressState,
+} from "../utils/buildProgress";
 
 const DEFAULT_STATE: ProgressState = {
   checked: {},
-  buildLevels: {},
+  buildProgress: {},
   buildTemplateId: DEFAULT_BUILD_TEMPLATE_ID,
 };
 
-/** Old item IDs that were split into subItems. When migrating, copy value to all new IDs. */
 const SPLIT_ITEM_MIGRATION: Record<string, string[]> = {
   lb13: ["lb13a", "lb13b", "lb13c", "lb13d", "lb13e", "lb13f"],
   tb13: ["tb13a", "tb13b", "tb13c"],
@@ -38,10 +42,11 @@ function migrateLegacy(parsed: unknown): ProgressState {
   if (parsed && typeof parsed === "object" && "checked" in parsed) {
     const p = parsed as Partial<ProgressState>;
     const checked = migrateSplitItems(p.checked ?? {});
+    const { buildProgress, buildTemplateId } = migrateProgressState(p);
     return {
       checked,
-      buildLevels: p.buildLevels ?? {},
-      buildTemplateId: p.buildTemplateId ?? DEFAULT_BUILD_TEMPLATE_ID,
+      buildProgress,
+      buildTemplateId,
       buildStats: p.buildStats,
       lastExport: p.lastExport,
     };
@@ -52,9 +57,21 @@ function migrateLegacy(parsed: unknown): ProgressState {
     for (const [k, v] of Object.entries(p)) {
       if (typeof v === "boolean") checked[k] = v;
     }
-    return { checked: migrateSplitItems(checked), buildLevels: {}, buildTemplateId: DEFAULT_BUILD_TEMPLATE_ID };
+    return {
+      checked: migrateSplitItems(checked),
+      buildProgress: {},
+      buildTemplateId: DEFAULT_BUILD_TEMPLATE_ID,
+    };
   }
   return DEFAULT_STATE;
+}
+
+function hasAnyProgress(state: ProgressState): boolean {
+  if (Object.keys(state.checked).length > 0) return true;
+  if (state.buildProgress) {
+    return Object.values(state.buildProgress).some((b) => Object.keys(b.levels).length > 0);
+  }
+  return Object.keys(state.buildLevels ?? {}).length > 0;
 }
 
 function loadFromStorage(storageKey: string): ProgressState {
@@ -75,10 +92,16 @@ export function useProgress(profileId: string | null) {
   const [state, setState] = useState<ProgressState>(DEFAULT_STATE);
   const [loaded, setLoaded] = useState(false);
 
+  const buildTemplateId = state.buildTemplateId ?? DEFAULT_BUILD_TEMPLATE_ID;
+
+  const activeBuildLevels = useMemo(
+    () => getBuildLevels(state, buildTemplateId),
+    [state, buildTemplateId]
+  );
+
   useEffect(() => {
     const fromStorage = loadFromStorage(storageKey);
-    const hasData = Object.keys(fromStorage.checked).length > 0 || Object.keys(fromStorage.buildLevels).length > 0;
-    if (hasData) {
+    if (hasAnyProgress(fromStorage)) {
       setState(fromStorage);
       setLoaded(true);
       return;
@@ -95,7 +118,9 @@ export function useProgress(profileId: string | null) {
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      const toSave = { ...state };
+      delete toSave.buildLevels;
+      localStorage.setItem(storageKey, JSON.stringify(toSave));
     } catch {
       // ignore
     }
@@ -108,19 +133,34 @@ export function useProgress(profileId: string | null) {
     }));
   }, []);
 
-  const toggleBuildLevel = useCallback((sl: number) => {
-    setState((s) => ({
-      ...s,
-      buildLevels: { ...s.buildLevels, [sl]: !s.buildLevels[sl] },
-    }));
-  }, []);
+  const toggleBuildLevel = useCallback(
+    (sl: number, templateId?: string) => {
+      const tid = templateId ?? buildTemplateId;
+      setState((s) => {
+        const progress = { ...(s.buildProgress ?? {}) };
+        const slice = progress[tid] ?? emptyBuildProgressSlice();
+        const levels = { ...slice.levels, [sl]: !slice.levels[sl] };
+        if (!levels[sl]) delete levels[sl];
+        progress[tid] = { levels };
+        return { ...s, buildProgress: progress, buildTemplateId: s.buildTemplateId ?? tid };
+      });
+    },
+    [buildTemplateId]
+  );
 
-  const setBuildLevels = useCallback((levels: Record<number, boolean>) => {
-    setState((s) => ({ ...s, buildLevels: levels }));
-  }, []);
+  const setBuildLevelsForTemplate = useCallback((levels: Record<number, boolean>, templateId?: string) => {
+    const tid = templateId ?? buildTemplateId;
+    setState((s) => {
+      const progress = { ...(s.buildProgress ?? {}) };
+      progress[tid] = { levels: { ...levels } };
+      return { ...s, buildProgress: progress };
+    });
+  }, [buildTemplateId]);
 
   const exportProgress = useCallback(() => {
-    const data = JSON.stringify(state, null, 2);
+    const toExport = { ...state };
+    delete toExport.buildLevels;
+    const data = JSON.stringify(toExport, null, 2);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -154,18 +194,25 @@ export function useProgress(profileId: string | null) {
   }, [storageKey]);
 
   const setBuildTemplateId = useCallback((id: string) => {
-    setState((s) => ({ ...s, buildTemplateId: id }));
+    setState((s) => {
+      const progress = { ...(s.buildProgress ?? {}) };
+      if (!progress[id]) progress[id] = emptyBuildProgressSlice();
+      return { ...s, buildTemplateId: id, buildProgress: progress };
+    });
   }, []);
 
   return {
     state,
     loaded,
+    buildTemplateId,
+    activeBuildLevels,
     toggle,
     toggleBuildLevel,
-    setBuildLevels,
+    setBuildLevels: setBuildLevelsForTemplate,
     setBuildTemplateId,
     exportProgress,
     importProgress,
     resetAll,
   };
 }
+

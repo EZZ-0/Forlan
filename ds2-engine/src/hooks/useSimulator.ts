@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { getBuildTemplate, DEFAULT_BUILD_TEMPLATE_ID } from "../data/buildTemplates";
+import { STARTING_SL } from "../data/buildTemplates/levelGenerator";
 import { getSimulatorKey } from "../types";
 import type { SimulatorState, SimulatorItem, SlotId, StatKey, InfusionType } from "../data/simulator/types";
 import { getObtainedItemIds } from "../data/simulator/progressToItemMap";
@@ -63,6 +64,7 @@ export function useSimulator(
   const template = getBuildTemplate(buildTemplateId);
   const baseStats: Record<string, number> = template?.baseStats ?? {};
   const levels = template?.levels ?? [];
+  const startSl = template ? STARTING_SL[template.startingClass] : 11;
   const storageKey = profileId ? getSimulatorKey(profileId) : LEGACY_SIMULATOR_KEY;
 
   const [state, setState] = useState<SimulatorState>(() => {
@@ -85,7 +87,7 @@ export function useSimulator(
       for (const l of levels) {
         if (buildLevels[l.sl]) stats[l.stat as StatKey] = l.value;
       }
-      const sl = 11 + levels.filter((l) => buildLevels[l.sl]).length;
+      const sl = startSl + levels.filter((l) => buildLevels[l.sl]).length;
       return { ...state, stats, sl };
     }
     const stats = state.stats;
@@ -93,8 +95,8 @@ export function useSimulator(
       (sum, k) => sum + Math.max(0, (stats[k] ?? baseStats[k] ?? 0) - (baseStats[k] ?? 0)),
       0
     );
-    return { ...state, sl: 11 + levelsUsed };
-  }, [state, buildLevels, baseStats, levels]);
+    return { ...state, sl: startSl + levelsUsed };
+  }, [state, buildLevels, baseStats, levels, startSl]);
 
   const computed = useMemo(() => computeSimulatorStats(effectiveState), [effectiveState]);
 

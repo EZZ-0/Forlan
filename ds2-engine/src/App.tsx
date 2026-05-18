@@ -8,6 +8,8 @@ import { computeStats, areaCompletion, areaCompletionFromItems } from "./utils/s
 import { AppLayout, SplitContextPanel, BuildContextPanel, AreaContextPanel } from "./layout";
 import { ProgressBar, Modal, Button, SectionPanel } from "./components";
 import { colors, typography } from "./theme";
+import { countCompletedLevels } from "./utils/buildProgress";
+import { STARTING_SL } from "./data/buildTemplates/levelGenerator";
 import {
   AREA_ORDER,
   getArea,
@@ -95,9 +97,9 @@ export default function App() {
     exportProgress,
     importProgress,
     resetAll,
+    buildTemplateId,
+    activeBuildLevels,
   } = useProgress(activeProfileId);
-
-  const buildTemplateId = state.buildTemplateId ?? "dark-melee-hexer";
   const buildTemplate = getBuildTemplate(buildTemplateId);
   const buildSteps = buildTemplate?.buildSteps;
 
@@ -272,6 +274,10 @@ export default function App() {
             mainContent={
               <BuildView
                 state={state}
+                buildLevels={activeBuildLevels}
+                buildTemplateId={buildTemplateId}
+                setBuildTemplateId={setBuildTemplateId}
+                buildTemplates={getAllBuildTemplates()}
                 toggleBuildLevel={toggleBuildLevel}
                 setBuildLevels={setBuildLevels}
                 checked={checked}
@@ -332,7 +338,7 @@ export default function App() {
             profileId={activeProfileId}
             buildTemplateId={buildTemplateId}
             checked={checked}
-            buildLevels={state.buildLevels}
+            buildLevels={activeBuildLevels}
             toggleBuildLevel={toggleBuildLevel}
             setBuildLevels={setBuildLevels}
           />
@@ -504,12 +510,12 @@ function DashboardView({
   focusMode,
   setFocusMode,
 }: {
-  state: { checked: Record<string, boolean>; buildLevels: Record<number, boolean> };
+  state: import("./types").ProgressState;
   stats: ReturnType<typeof computeStats>;
   checked: Record<string, boolean>;
   buildStats: ReturnType<typeof buildChecklistStats>;
   buildSteps?: import("./data/buildChecklist").BuildStep[];
-  buildTemplate?: { id?: string; name: string; phaseInfo?: { num: number; name: string; range: string; color: string }[]; buildSteps?: import("./data/buildChecklist").BuildStep[] };
+  buildTemplate?: import("./data/buildTemplates/types").BuildTemplate;
   setView: (v: View) => void;
   setSelectedArea: (a: AreaId | null) => void;
   setSelectedQuest: (q: string | null) => void;
@@ -2015,6 +2021,10 @@ function QuestsView({
 // Build View
 function BuildView({
   state,
+  buildLevels,
+  buildTemplateId,
+  setBuildTemplateId,
+  buildTemplates,
   toggleBuildLevel,
   setBuildLevels,
   checked,
@@ -2026,7 +2036,11 @@ function BuildView({
   onOpenShopUnlocks,
   buildTemplate,
 }: {
-  state: { checked: Record<string, boolean>; buildLevels: Record<number, boolean>; buildTemplateId?: string };
+  state: import("./types").ProgressState;
+  buildLevels: Record<number, boolean>;
+  buildTemplateId: string;
+  setBuildTemplateId: (id: string) => void;
+  buildTemplates: import("./data/buildTemplates/types").BuildTemplate[];
   toggleBuildLevel: (sl: number) => void;
   setBuildLevels: (l: Record<number, boolean>) => void;
   checked: Record<string, boolean>;
@@ -2036,13 +2050,16 @@ function BuildView({
   openSub?: "roadmap" | "checklist" | "equip" | "info" | "farming" | null;
   onOpenSubHandled?: () => void;
   onOpenShopUnlocks?: () => void;
-  buildTemplate?: { id?: string; name: string; description: string; levels: { sl: number; stat: string; value: number; phase: number; note: string }[]; phaseInfo: { num: number; name: string; range: string; color: string; areas: string }[]; buildSteps: import("./data/buildChecklist").BuildStep[]; buildItems?: import("./data/buildItems").BuildItem[]; buildMaterialFarms?: { item: string; purpose: string; sources: import("./data/buildItems").BuildItemSource[]; farmOptions: import("./data/buildItems").BuildItemFarm[] }[] };
+  buildTemplate?: import("./data/buildTemplates/types").BuildTemplate;
 }) {
   const buildSuggest = useBuildSuggest(state);
   const levels = buildTemplate?.levels ?? LEVELS;
   const phaseInfo = buildTemplate?.phaseInfo ?? PHASE_INFO;
   const buildSteps = buildTemplate?.buildSteps;
-  const maxSL = 11 + levels.length;
+  const startSl = buildTemplate?.startingClass ? STARTING_SL[buildTemplate.startingClass] : 11;
+  const maxSL = startSl + levels.length;
+  const levelSls = levels.map((l) => l.sl);
+  const levelProgress = countCompletedLevels(buildLevels, levelSls);
   const bStats = buildChecklistStats(checked, buildSteps);
 
   const [buildSub, setBuildSub] = useState<"roadmap" | "checklist" | "equip" | "infusion" | "farming" | "info">("roadmap");
@@ -2061,8 +2078,8 @@ function BuildView({
       ? (buildSuggest.nextSuggestion as { sl: number }).sl
       : null;
     if (!suggested) return base;
-    const completed = base.filter((l) => state.buildLevels[l.sl]).sort((a, b) => a.sl - b.sl);
-    const unchecked = base.filter((l) => !state.buildLevels[l.sl]);
+    const completed = base.filter((l) => buildLevels[l.sl]).sort((a, b) => a.sl - b.sl);
+    const unchecked = base.filter((l) => !buildLevels[l.sl]);
     const suggestedLevel = unchecked.find((l) => l.sl === suggested);
     const rest = unchecked.filter((l) => l.sl !== suggested).sort((a, b) => a.sl - b.sl);
     return [...completed, ...(suggestedLevel ? [suggestedLevel, ...rest] : unchecked)];
@@ -2078,6 +2095,56 @@ function BuildView({
           borderBottom: "1px solid #2a2420",
         }}
       >
+        <label
+          htmlFor="build-template-select"
+          style={{
+            display: "block",
+            fontSize: 11,
+            color: dimText,
+            marginBottom: 6,
+            fontFamily: "'Cinzel', Georgia, serif",
+            letterSpacing: "0.06em",
+          }}
+        >
+          CHOOSE YOUR BUILD
+        </label>
+        <select
+          id="build-template-select"
+          value={buildTemplateId}
+          onChange={(e) => setBuildTemplateId(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            background: bgCard,
+            border: `1px solid ${gold}44`,
+            borderRadius: 8,
+            color: lightText,
+            fontSize: 14,
+            fontFamily: "'EB Garamond', Georgia, serif",
+            marginBottom: 10,
+            cursor: "pointer",
+          }}
+        >
+          {buildTemplates.map((t) => {
+            const sls = t.levels.map((l) => l.sl);
+            const saved = state.buildProgress?.[t.id]?.levels ?? {};
+            const { done, total } = countCompletedLevels(
+              t.id === buildTemplateId ? buildLevels : saved,
+              sls
+            );
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            return (
+              <option key={t.id} value={t.id}>
+                {t.name}
+                {total > 0 ? ` — ${pct}% levels` : ""}
+              </option>
+            );
+          })}
+        </select>
+        <p style={{ fontSize: 11, color: dimText, lineHeight: 1.45, margin: "0 0 12px" }}>
+          Area checklists stay the same when you switch builds. Level roadmap progress is saved separately for each build.
+        </p>
+        <div style={{ textAlign: "center" }}>
         <div
           style={{
             fontFamily: "'Cinzel', Georgia, serif",
@@ -2106,6 +2173,12 @@ function BuildView({
           }}
         >
           SL {buildSuggest.currentSL} / {maxSL}
+          {levelProgress.total > 0 && (
+            <span style={{ color: dimText, fontSize: 12 }}>
+              {" "}
+              · Levels {levelProgress.done}/{levelProgress.total}
+            </span>
+          )}
         </div>
         <div
           style={{
@@ -2170,6 +2243,7 @@ function BuildView({
             )}
           </div>
         )}
+        </div>
       </div>
 
       <div
@@ -2347,7 +2421,7 @@ function BuildView({
             </button>
             {phaseInfo.map((p) => {
               const pLevels = levels.filter((l) => l.phase === p.num);
-              const pDone = pLevels.filter((l) => state.buildLevels[l.sl]).length;
+              const pDone = pLevels.filter((l) => buildLevels[l.sl]).length;
               return (
                 <button
                   key={p.num}
@@ -2376,7 +2450,7 @@ function BuildView({
 
           <div style={{ display: "grid", gap: 2 }}>
             {filteredLevels.map((l) => {
-              const done = state.buildLevels[l.sl];
+              const done = buildLevels[l.sl];
               const isMilestone = l.note.startsWith("★");
               const pi = phaseInfo[l.phase - 1];
               const isSuggested = !done && buildSuggest.nextSuggestion && "sl" in buildSuggest.nextSuggestion && (buildSuggest.nextSuggestion as { sl: number }).sl === l.sl;
@@ -2467,13 +2541,13 @@ function BuildView({
           >
             {phaseInfo.map((pi) => {
               const pLevels = levels.filter((l) => l.phase === pi.num);
-              const pDone = pLevels.filter((l) => state.buildLevels[l.sl]).length;
+              const pDone = pLevels.filter((l) => buildLevels[l.sl]).length;
               if (pDone >= pLevels.length) return null;
               return (
                 <button
                   key={pi.num}
                   onClick={() => {
-                    const next: Record<number, boolean> = { ...state.buildLevels };
+                    const next: Record<number, boolean> = { ...buildLevels };
                     pLevels.forEach((l) => (next[l.sl] = true));
                     setBuildLevels(next);
                   }}

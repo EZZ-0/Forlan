@@ -1,6 +1,15 @@
+export interface BuildProgressSlice {
+  levels: Record<number, boolean>;
+}
+
+/** Per-build level roadmap progress (key = build template id) */
+export type BuildProgressMap = Record<string, BuildProgressSlice>;
+
 export interface ProgressState {
   checked: Record<string, boolean>;
-  buildLevels: Record<number, boolean>;
+  /** @deprecated Migrated to buildProgress — do not write new data here */
+  buildLevels?: Record<number, boolean>;
+  buildProgress?: BuildProgressMap;
   buildTemplateId?: string;
   buildStats?: Record<string, number>;
   lastExport?: string;

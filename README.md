@@ -153,12 +153,23 @@ If you delete browser data for this site, you can lose progress — so **Export*
 | **Areas** | Checklists for each area |
 | **Quests** | NPC questlines |
 | **Trackers** | Gestures, covenants, Estus, bone dust |
-| **Build** | Level-up guide and gear lists |
+| **Build** | Pick one of **21 builds**, level roadmap, gear checklist (progress saved per build) |
 | **Farming** | Soul and material farming spots |
 | **Items** | Boss souls, secrets, shops |
 | **Enemies** | Weaknesses and drops |
 | **Simulator** | Try stats and gear |
 | **Get OP** | Extra tips |
+
+---
+
+## Switching builds mid-run
+
+1. Open the **Build** tab.
+2. Use **Choose your build** at the top.
+3. Your **area checkboxes** stay the same (same playthrough).
+4. **Level roadmap** ticks are saved **separately for each build** — switch back anytime.
+
+Use **Export** in the top bar to back up everything.
 
 ---
 

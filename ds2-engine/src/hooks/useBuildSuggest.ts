@@ -1,9 +1,14 @@
 import { useMemo } from "react";
 import { getBuildTemplate, DEFAULT_BUILD_TEMPLATE_ID } from "../data/buildTemplates";
+import { STARTING_SL } from "../data/buildTemplates/levelGenerator";
 import type { ProgressState } from "../types";
+import { getBuildLevels } from "../utils/buildProgress";
 
-export function useBuildSuggest(state: Pick<ProgressState, "buildLevels" | "buildTemplateId">) {
-  const { buildLevels, buildTemplateId = DEFAULT_BUILD_TEMPLATE_ID } = state;
+export function useBuildSuggest(
+  state: Pick<ProgressState, "buildProgress" | "buildLevels" | "buildTemplateId">
+) {
+  const buildTemplateId = state.buildTemplateId ?? DEFAULT_BUILD_TEMPLATE_ID;
+  const buildLevels = getBuildLevels(state, buildTemplateId);
   const template = getBuildTemplate(buildTemplateId);
   const baseStats: Record<string, number> = template?.baseStats ?? {};
   const levels = template?.levels ?? [];
@@ -26,9 +31,11 @@ export function useBuildSuggest(state: Pick<ProgressState, "buildLevels" | "buil
     [buildLevels, levels]
   );
 
+  const startSl = template ? STARTING_SL[template.startingClass] : 11;
+
   const currentSL = useMemo(() => {
-    return 11 + levelsCompleted;
-  }, [levelsCompleted]);
+    return startSl + levelsCompleted;
+  }, [levelsCompleted, startSl]);
 
   const currentPhase = useMemo(() => {
     const lastCompleted = levels
