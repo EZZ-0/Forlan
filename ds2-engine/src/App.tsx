@@ -6,7 +6,7 @@ import { useKeyboard } from "./hooks/useKeyboard";
 import { useBuildSuggest } from "./hooks/useBuildSuggest";
 import { computeStats, areaCompletion, areaCompletionFromItems } from "./utils/stats";
 import { AppLayout, SplitContextPanel, BuildContextPanel, AreaContextPanel } from "./layout";
-import { ProgressBar, Modal, Button, SectionPanel } from "./components";
+import { ProgressBar, Modal, Button, SectionPanel, AreaBulkMarkButtons } from "./components";
 import { colors, typography } from "./theme";
 import { countCompletedLevels } from "./utils/buildProgress";
 import { STARTING_SL } from "./data/buildTemplates/levelGenerator";
@@ -40,6 +40,8 @@ import {
   getBossSoulTradeDetails,
   getBuildStepsForArea,
   buildChecklistStats,
+  getAreaBulkMarkGroups,
+  routeCompletion,
   getBuildTemplate,
   getAllBuildTemplates,
   isHandcraftedBuild,
@@ -73,6 +75,8 @@ import { getQuestStepsInArea } from "./utils/questArea";
 import { getGoBackAlerts } from "./utils/goBackAlerts";
 import type { AreaId } from "./data/areas";
 import { TrackersView, SimulatorView, ItemDatabaseView, GetOpView } from "./views";
+import { BuildDetailsPanel } from "./views/BuildDetailsPanel";
+import { getEnemyMatchupTier, MATCHUP_TIER_META } from "./data/buildDetails";
 
 const bg = colors.bg;
 const bgCard = colors.bgCard;
@@ -92,6 +96,7 @@ export default function App() {
     state,
     loaded,
     toggle,
+    setCheckedMany,
     toggleBuildLevel,
     setBuildLevels,
     setBuildTemplateId,
@@ -113,7 +118,7 @@ export default function App() {
   const [farmBestOnly, setFarmBestOnly] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [buildOpenSub, setBuildOpenSub] = useState<"roadmap" | "checklist" | "equip" | "info" | "farming" | null>(null);
+  const [buildOpenSub, setBuildOpenSub] = useState<"roadmap" | "checklist" | "equip" | "details" | "farming" | null>(null);
   const [enemiesSub, setEnemiesSub] = useState<"weaknesses" | "buffs" | "drops">("weaknesses");
   const [buildContextOpen, setBuildContextOpen] = useState(true);
   const [areaContextOpen, setAreaContextOpen] = useState(true);
@@ -228,6 +233,7 @@ export default function App() {
                 setSelectedQuest={setSelectedQuest}
                 checked={checked}
                 toggle={toggle}
+                setCheckedMany={setCheckedMany}
                 lucBossSurvivals={
                   ["nm7", "sr4", "ik7", "bg8", "d311"].filter((id) => checked[id])
                     .length
@@ -332,6 +338,7 @@ export default function App() {
           <EnemiesView
             enemiesSub={enemiesSub}
             setEnemiesSub={setEnemiesSub}
+            buildTemplateId={buildTemplateId}
           />
         )}
         {view === "simulator" && (
@@ -1176,6 +1183,7 @@ function AreaView({
   setSelectedQuest,
   checked,
   toggle,
+  setCheckedMany,
   lucBossSurvivals,
   openBuildChecklist,
   buildSteps,
@@ -1188,6 +1196,7 @@ function AreaView({
   setSelectedQuest: (q: string | null) => void;
   checked: Record<string, boolean>;
   toggle: (id: string) => void;
+  setCheckedMany: (ids: string[], value: boolean) => void;
   lucBossSurvivals: number;
   openBuildChecklist: () => void;
   buildSteps?: import("./data/buildChecklist").BuildStep[];
@@ -1221,6 +1230,10 @@ function AreaView({
   const areaBuildSteps = getBuildStepsForArea(selectedArea, buildSteps);
   const bStats = buildChecklistStats(checked, buildSteps);
   const stepsForAccordion = areaBuildSteps;
+  const bulkGroups = getAreaBulkMarkGroups(selectedArea, buildSteps);
+  const routeComp = routeCompletion(selectedArea, checked);
+  const bulkMark = (ids: string[]) => setCheckedMany(ids, true);
+  const bulkClear = (ids: string[]) => setCheckedMany(ids, false);
   const areaFiltered = areaSearchFilter
     ? areaOrder.filter((a) =>
         getArea(a).name.toLowerCase().includes(areaSearchFilter.toLowerCase())
@@ -1396,7 +1409,18 @@ function AreaView({
           <div className={`area-quadrants-grid ${areaFocusMode ? "area-focus-mode" : ""}`}>
             {/* 1. CHECKLIST */}
             <div className="area-quadrant">
-              <SectionPanel title="CHECKLIST" badge={`${done}/${total}`}>
+              <SectionPanel
+                title="CHECKLIST"
+                badge={`${done}/${total} · route ${routeComp.done}/${routeComp.total}`}
+                headerExtra={
+                  <AreaBulkMarkButtons
+                    groups={bulkGroups.filter((g) => g.label === "Route" || g.label === "Checklist")}
+                    onMark={bulkMark}
+                    onClear={bulkClear}
+                    compact
+                  />
+                }
+              >
         <div style={{ display: "grid", gap: 8 }}>
           {/* Quest assignments — interconnected with Quest window & Quest tab */}
           {questStepsHere.length > 0 && (
@@ -1595,7 +1619,18 @@ function AreaView({
             {/* 3. QUESTS (hidden in focus mode) */}
             {!areaFocusMode && (
             <div className="area-quadrant">
-              <SectionPanel title="QUESTS" badge={questStepsHere.length > 0 ? `${questStepsHere.filter((qs) => checked[qs.ref]).length}/${questStepsHere.length}` : "0"}>
+              <SectionPanel
+                title="QUESTS"
+                badge={questStepsHere.length > 0 ? `${questStepsHere.filter((qs) => checked[qs.ref]).length}/${questStepsHere.length}` : "0"}
+                headerExtra={
+                  <AreaBulkMarkButtons
+                    groups={bulkGroups.filter((g) => g.label === "Quests")}
+                    onMark={bulkMark}
+                    onClear={bulkClear}
+                    compact
+                  />
+                }
+              >
           {questStepsHere.length > 0 ? (
           <div style={{ display: "grid", gap: 8 }}>
             {questStepsHere.map((qs) => {
@@ -1649,7 +1684,18 @@ function AreaView({
             {/* 5. SECRETS (hidden in focus mode) */}
             {!areaFocusMode && (
             <div className="area-quadrant">
-              <SectionPanel title="SECRETS" badge={hasSecrets ? `${illusoryHere.length + pharrosHere.length + breakableHere.length}` : "0"}>
+              <SectionPanel
+                title="SECRETS"
+                badge={hasSecrets ? `${illusoryHere.length + pharrosHere.length + breakableHere.length}` : "0"}
+                headerExtra={
+                  <AreaBulkMarkButtons
+                    groups={bulkGroups.filter((g) => g.label === "Secrets")}
+                    onMark={bulkMark}
+                    onClear={bulkClear}
+                    compact
+                  />
+                }
+              >
           {hasSecrets ? (
           <>
           <div style={{ fontSize: 12, color: dimText, marginBottom: 12, lineHeight: 1.65 }}>Illusory: press A/X. Breakable: attack or explosions.</div>
@@ -1702,7 +1748,18 @@ function AreaView({
             {/* 6. BUILD (hidden in focus mode) */}
             {!areaFocusMode && (
             <div className="area-quadrant">
-              <SectionPanel title="WEAPONS & BUILD" badge={stepsForAccordion.length > 0 ? `${stepsForAccordion.filter((s) => checked[s.progressId]).length}/${stepsForAccordion.length}` : "0"}>
+              <SectionPanel
+                title="WEAPONS & BUILD"
+                badge={stepsForAccordion.length > 0 ? `${stepsForAccordion.filter((s) => checked[s.progressId]).length}/${stepsForAccordion.length}` : "0"}
+                headerExtra={
+                  <AreaBulkMarkButtons
+                    groups={bulkGroups.filter((g) => g.label === "Build")}
+                    onMark={bulkMark}
+                    onClear={bulkClear}
+                    compact
+                  />
+                }
+              >
           {stepsForAccordion.length > 0 ? (
           <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
@@ -2048,7 +2105,7 @@ function BuildView({
   toggle: (id: string) => void;
   setView: (v: View) => void;
   setSelectedArea: (a: AreaId | null) => void;
-  openSub?: "roadmap" | "checklist" | "equip" | "info" | "farming" | null;
+  openSub?: "roadmap" | "checklist" | "equip" | "details" | "farming" | null;
   onOpenSubHandled?: () => void;
   onOpenShopUnlocks?: () => void;
   buildTemplate?: import("./data/buildTemplates/types").BuildTemplate;
@@ -2063,7 +2120,7 @@ function BuildView({
   const levelProgress = countCompletedLevels(buildLevels, levelSls);
   const bStats = buildChecklistStats(checked, buildSteps);
 
-  const [buildSub, setBuildSub] = useState<"roadmap" | "checklist" | "equip" | "infusion" | "farming" | "info">("roadmap");
+  const [buildSub, setBuildSub] = useState<"roadmap" | "checklist" | "equip" | "infusion" | "farming" | "details">("roadmap");
 
   useEffect(() => {
     if (openSub) {
@@ -2261,11 +2318,11 @@ function BuildView({
           ["equip", "Weapons"],
           ["infusion", "Infusion"],
           ["farming", "Farming"],
-          ["info", "Info"],
+          ["details", "Build details"],
         ].map(([id, label]) => (
           <button
             key={id}
-            onClick={() => setBuildSub(id as "roadmap" | "checklist" | "equip" | "infusion" | "farming" | "info")}
+            onClick={() => setBuildSub(id as "roadmap" | "checklist" | "equip" | "infusion" | "farming" | "details")}
             style={{
               flex: 1,
               padding: 8,
@@ -2985,54 +3042,8 @@ function BuildView({
         </div>
       )}
 
-      {buildSub === "info" && (
-        <div style={{ display: "grid", gap: 12 }}>
-          <div
-            style={{
-              padding: 12,
-              background: "rgba(139,92,246,0.06)",
-              border: "1px solid rgba(139,92,246,0.2)",
-              borderRadius: 16,
-              fontSize: 12,
-              lineHeight: 1.6,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "'Cinzel', Georgia, serif",
-                color: gold,
-                marginBottom: 6,
-              }}
-            >
-              BUILD PHILOSOPHY
-            </div>
-            You are a dark-buffed katana user with access to all 4 magic schools.
-            Dark Orb is your ranged option, not your identity. The Uchigatana +
-            Dark Weapon buff is primary damage.
-          </div>
-          <div
-            style={{
-              padding: 12,
-              background: "rgba(139,92,246,0.06)",
-              border: "1px solid rgba(139,92,246,0.2)",
-              borderRadius: 16,
-              fontSize: 12,
-              lineHeight: 1.6,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "'Cinzel', Georgia, serif",
-                color: gold,
-                marginBottom: 6,
-              }}
-            >
-              AGILITY MATH
-            </div>
-            AGI = ((ATN + 3×ADP) / 4) + 80. ATN 43 + ADP 13 → 100 AGI = 11
-            i-frames + fastest Estus.
-          </div>
-        </div>
+      {buildSub === "details" && buildTemplate && (
+        <BuildDetailsPanel buildTemplate={buildTemplate} />
       )}
     </div>
   );
@@ -3860,14 +3871,17 @@ function ItemsView({
 function EnemiesView({
   enemiesSub,
   setEnemiesSub,
+  buildTemplateId,
 }: {
   enemiesSub: "weaknesses" | "buffs" | "drops";
   setEnemiesSub: (v: "weaknesses" | "buffs" | "drops") => void;
+  buildTemplateId?: string;
 }) {
   const [filterType, setFilterType] = useState<"all" | "boss" | "elite" | "common">("all");
   const [search, setSearch] = useState("");
   const [dropsSearch, setDropsSearch] = useState("");
   const [dropsFilterType, setDropsFilterType] = useState<"all" | "boss" | "elite" | "common">("all");
+  const [highlightBuildMatchups, setHighlightBuildMatchups] = useState(true);
 
   const filtered = ENEMY_WEAKNESSES.filter((e) => {
     if (filterType !== "all" && e.type !== filterType) return false;
@@ -3899,6 +3913,11 @@ function EnemiesView({
         }}
       >
         <strong style={{ color: gold }}>Enemy tactics:</strong> Boss-focused; coverage includes elites and common threats. Weaknesses show damage types that deal bonus damage. Counters are tactics and tips. Use Buffs tab for resins and spell buffs by element.
+        {buildTemplateId && (
+          <span style={{ display: "block", marginTop: 8 }}>
+            Active build matchups are highlighted when an enemy is weak to a damage type your build relies on.
+          </span>
+        )}
       </div>
 
       <div
@@ -3970,18 +3989,53 @@ function EnemiesView({
                 </button>
               ))}
             </div>
+            {buildTemplateId && (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 11,
+                  color: lightText,
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={highlightBuildMatchups}
+                  onChange={(ev) => setHighlightBuildMatchups(ev.target.checked)}
+                />
+                Highlight build matchups
+              </label>
+            )}
           </div>
 
           <div style={{ display: "grid", gap: 12 }}>
-            {filtered.map((e) => (
+            {filtered.map((e) => {
+              const matchupTier =
+                buildTemplateId && highlightBuildMatchups
+                  ? getEnemyMatchupTier(buildTemplateId, e)
+                  : null;
+              const matchupMeta = matchupTier ? MATCHUP_TIER_META[matchupTier] : null;
+              const showMatchup =
+                matchupTier && matchupTier !== "neutral" && matchupMeta;
+              return (
               <div
                 key={e.id}
                 style={{
                   padding: 14,
-                  background: bgCard,
+                  background: showMatchup ? matchupMeta!.bg : bgCard,
                   borderRadius: 16,
                   border: "1px solid #2a2420",
-                  borderLeft: `4px solid ${e.type === "boss" ? gold : e.type === "elite" ? ember : "#2a2420"}`,
+                  borderLeft: `4px solid ${
+                    showMatchup
+                      ? matchupMeta!.color
+                      : e.type === "boss"
+                        ? gold
+                        : e.type === "elite"
+                          ? ember
+                          : "#2a2420"
+                  }`,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -3999,6 +4053,21 @@ function EnemiesView({
                   >
                     {e.type}
                   </span>
+                  {showMatchup && (
+                    <span
+                      style={{
+                        fontSize: 9,
+                        padding: "2px 8px",
+                        background: matchupMeta!.bg,
+                        color: matchupMeta!.color,
+                        borderRadius: 10,
+                        border: `1px solid ${matchupMeta!.color}`,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {matchupMeta!.label}
+                    </span>
+                  )}
                   {e.optional && <span style={{ fontSize: 9, color: dimText }}>Optional</span>}
                 </div>
                 <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8, fontSize: 11 }}>
@@ -4027,7 +4096,8 @@ function EnemiesView({
                   </div>
                 )}
               </div>
-            ))}
+            );
+            })}
           </div>
         </>
       )}

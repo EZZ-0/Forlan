@@ -1,4 +1,5 @@
 export * from "./areas";
+export * from "./areaProgress";
 export * from "./areaTips";
 export * from "./areaAccess";
 export * from "./areaDependencies";
@@ -10,6 +11,7 @@ export * from "./warnings";
 export * from "./build";
 export * from "./buildItems";
 export * from "./buildTemplates";
+export * from "./buildDetails";
 export * from "./buildWeapons";
 export * from "./buildChecklist";
 export * from "./infusionGuide";

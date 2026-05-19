@@ -2,6 +2,8 @@
 // Item format: [id, text, type, questRef?, tags[]]
 // type: item | npc | boss | bonfire | key | warn
 
+import { enrichAreaItems } from "./areaProgressTier";
+
 export const AREA_ORDER = [
   "things_betwixt", "majula", "forest_of_fallen_giants", "heides_tower",
   "no_mans_wharf", "lost_bastille", "huntsmans_copse", "harvest_valley",
@@ -20,6 +22,8 @@ export interface AreaItemSubItem {
   items?: string[];
 }
 
+export type ProgressTier = "route" | "optional" | "collectible";
+
 export interface AreaItem {
   id: string;
   text: string;
@@ -27,6 +31,8 @@ export interface AreaItem {
   questRef?: string | null;
   tags?: string[];
   subItems?: AreaItemSubItem[];
+  /** Main path vs optional vs loot/collectible (see areaProgress.ts). */
+  progressTier?: ProgressTier;
 }
 
 export interface Area {
@@ -42,9 +48,10 @@ function item(
   type: AreaItem["type"],
   questRef?: string | null,
   tags?: string[],
-  subItems?: AreaItemSubItem[]
+  subItems?: AreaItemSubItem[],
+  progressTier?: ProgressTier
 ): AreaItem {
-  return { id, text, type, questRef: questRef ?? undefined, tags, subItems };
+  return { id, text, type, questRef: questRef ?? undefined, tags, subItems, progressTier };
 }
 
 export const AREAS: Record<AreaId, Omit<Area, "id">> = {
@@ -560,5 +567,6 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
 };
 
 export function getArea(id: AreaId): Area {
-  return { id, ...AREAS[id] };
+  const raw = AREAS[id];
+  return { id, ...raw, items: enrichAreaItems(raw.items) };
 }

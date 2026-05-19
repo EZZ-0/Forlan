@@ -133,6 +133,18 @@ export function useProgress(profileId: string | null) {
     }));
   }, []);
 
+  const setCheckedMany = useCallback((ids: string[], value: boolean) => {
+    if (ids.length === 0) return;
+    setState((s) => {
+      const checked = { ...s.checked };
+      for (const id of ids) {
+        if (value) checked[id] = true;
+        else delete checked[id];
+      }
+      return { ...s, checked };
+    });
+  }, []);
+
   const toggleBuildLevel = useCallback(
     (sl: number, templateId?: string) => {
       const tid = templateId ?? buildTemplateId;
@@ -207,6 +219,7 @@ export function useProgress(profileId: string | null) {
     buildTemplateId,
     activeBuildLevels,
     toggle,
+    setCheckedMany,
     toggleBuildLevel,
     setBuildLevels: setBuildLevelsForTemplate,
     setBuildTemplateId,
@@ -215,4 +228,4 @@ export function useProgress(profileId: string | null) {
     resetAll,
   };
 }
-
+

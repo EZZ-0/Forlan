@@ -1,5 +1,6 @@
 export { Accordion } from "./Accordion";
 export { SectionPanel } from "./SectionPanel";
+export { AreaBulkMarkButtons } from "./AreaBulkMarkButtons";
 export { Badge } from "./Badge";
 export { ItemTooltip } from "./ItemTooltip";
 export { Button } from "./Button";

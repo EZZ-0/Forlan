@@ -4,10 +4,12 @@ import { colors, typography } from "../theme";
 export function SectionPanel({
   title,
   badge,
+  headerExtra,
   children,
 }: {
   title: string;
   badge?: string;
+  headerExtra?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -41,6 +43,11 @@ export function SectionPanel({
           </span>
         )}
       </div>
+      {headerExtra != null && (
+        <div style={{ padding: "0 12px 8px", borderBottom: `1px solid ${colors.border}` }}>
+          {headerExtra}
+        </div>
+      )}
       <div className="section-panel-content" style={{ padding: "10px 12px 12px" }}>{children}</div>
     </div>
   );
