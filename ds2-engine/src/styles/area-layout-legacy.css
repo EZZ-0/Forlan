@@ -1,0 +1,34 @@
+/**
+ * Legacy Areas layout (pre–Wave 7): 2×3 fixed-height quadrant grid.
+ * Not imported by default. To restore old UI after Wave 7:
+ * 1. git revert <wave-7-commit>
+ * OR manually re-import this file in main.tsx/App.tsx and swap
+ *    .area-workspace → .area-quadrants-grid in AreaView.
+ */
+
+.area-quadrants-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 340px);
+  gap: 16px;
+}
+
+.area-quadrant {
+  min-height: 340px;
+  overflow-y: auto;
+  background: #1a1714;
+  border: 1px solid #2a2420;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 600px) {
+  .area-quadrants-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 300px;
+  }
+  .area-quadrant {
+    min-height: 300px;
+  }
+}

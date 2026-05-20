@@ -114,9 +114,9 @@ export function getAreaBulkMarkGroups(
 
   const groups: AreaBulkMarkGroup[] = [
     {
-      label: "Route",
-      markLabel: "Mark route",
-      clearLabel: "Clear route",
+      label: "Main path",
+      markLabel: "Mark main path",
+      clearLabel: "Clear main path",
       ids: routeIds,
     },
     {

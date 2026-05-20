@@ -5,6 +5,7 @@
 
 import type { AreaId, Area, AreaItem } from "./areas";
 import { AREA_ORDER } from "./areas";
+import { SEMI_FAST_SKIP_IDS } from "./semiFastConstants";
 
 export type AreaUnlockConditionType = "area" | "item" | "boss" | "souls" | "key" | "or";
 
@@ -170,12 +171,7 @@ export const SEMI_FAST_MILESTONES: SemiFastMilestone[] = [
   { id: "ms:throne", label: "Throne of Want", areaId: "throne_of_want", requiredItemIds: ["tw1"] },
 ];
 
-/** Item IDs to skip in semi-fast run: optional bosses, sub-areas, Lucatiel summons, covenant-only. */
-export const SEMI_FAST_SKIP_IDS = new Set<string>([
-  "fg15", "fg13", "nm7", "ik7", "ik8", "bg8", "da8", "sr4", "d311", "d18", "d26", "d27", "d312",
-  "lb10", "lb11", "ik11", "ik12", "ik13", "ik13a", "ik13b", "ik13c",
-  "hc10", "pt5", "ht8", "mj8", "dp1", "dp2", "dp3", "dp4", "dp4a", "dp4b", "dp5", "dp6", "dp7", "dp8",
-]);
+export { SEMI_FAST_SKIP_IDS } from "./semiFastConstants";
 
 /** Areas shown in semi-fast sidebar — excludes optional areas (Doors of Pharros, Dark Chasm). */
 export const SEMI_FAST_AREA_ORDER = AREA_ORDER.filter(

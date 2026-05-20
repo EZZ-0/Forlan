@@ -11,6 +11,7 @@ import { EquipmentPanel } from "./simulator/EquipmentPanel";
 import { StatPanel } from "./simulator/StatPanel";
 import { LevelControl } from "./simulator/LevelControl";
 import { ItemDatabasePanel } from "./simulator/ItemDatabasePanel";
+import { SimulatorMetaPanel } from "./simulator/SimulatorMetaPanel";
 import { ProgressBar } from "../components";
 import { BUILD_MAX_SL, FREE_MAX_SL } from "../data/simulator/constants";
 import type { StatKey } from "../data/simulator/types";
@@ -158,6 +159,8 @@ export function SimulatorView({
           }}
         />
       </div>
+
+      <SimulatorMetaPanel stats={effectiveState.stats} sl={effectiveState.sl} />
 
       {/* Leveling — below, adaptive */}
       <LevelControl

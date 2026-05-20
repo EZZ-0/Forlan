@@ -11,3 +11,4 @@ export { ProgressBar } from "./ProgressBar";
 export { TabBar } from "./TabBar";
 export type { TabItem } from "./TabBar";
 export { Table } from "./Table";
+export { ProgressImportCard } from "./ProgressImportCard";

@@ -1,5 +1,7 @@
 export * from "./areas";
 export * from "./areaProgress";
+export * from "./checklistMetadata";
+export * from "./achievements";
 export * from "./areaTips";
 export * from "./areaAccess";
 export * from "./areaDependencies";

@@ -24,6 +24,35 @@ export interface AreaItemSubItem {
 
 export type ProgressTier = "route" | "optional" | "collectible";
 
+export type NgCycle = "ng1" | "ng2" | "ng2plus" | "any";
+
+export type ChecklistCategory =
+  | "boss"
+  | "npc"
+  | "bonfire"
+  | "key"
+  | "loot"
+  | "quest"
+  | "covenant"
+  | "gesture"
+  | "secret"
+  | "warn"
+  | "other";
+
+export interface RowFlags {
+  achievement?: boolean;
+  missable?: boolean;
+  npcKill?: boolean;
+  routeHint?: boolean;
+}
+
+export interface AreaItemExtra {
+  progressTier?: ProgressTier;
+  ngCycle?: NgCycle;
+  category?: ChecklistCategory;
+  flags?: RowFlags;
+}
+
 export interface AreaItem {
   id: string;
   text: string;
@@ -33,6 +62,9 @@ export interface AreaItem {
   subItems?: AreaItemSubItem[];
   /** Main path vs optional vs loot/collectible (see areaProgress.ts). */
   progressTier?: ProgressTier;
+  ngCycle?: NgCycle;
+  category?: ChecklistCategory;
+  flags?: RowFlags;
 }
 
 export interface Area {
@@ -49,9 +81,20 @@ function item(
   questRef?: string | null,
   tags?: string[],
   subItems?: AreaItemSubItem[],
-  progressTier?: ProgressTier
+  extra?: AreaItemExtra
 ): AreaItem {
-  return { id, text, type, questRef: questRef ?? undefined, tags, subItems, progressTier };
+  return {
+    id,
+    text,
+    type,
+    questRef: questRef ?? undefined,
+    tags,
+    subItems,
+    progressTier: extra?.progressTier,
+    ngCycle: extra?.ngCycle,
+    category: extra?.category,
+    flags: extra?.flags,
+  };
 }
 
 export const AREAS: Record<AreaId, Omit<Area, "id">> = {
@@ -63,7 +106,7 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       item("tb2", "Talk to Milibeth & Old Firekeepers", "npc"),
       item("tb3", "Chest upstairs — Human Effigy", "item"),
       item("tb4", "Destroy cart outside — Soul of a Lost Undead + Torch", "item"),
-      item("tb5", "Light bonfire", "bonfire"),
+      item("tb5", "Light bonfire", "bonfire", null, undefined, undefined, { progressTier: "route", category: "bonfire" }),
       item("tb6", "Hidden path below bridge — Small Smooth & Silky Stone", "item"),
       item("tb7", "Kill Ogre near bridge — Stone Ring", "item"),
       item("tb8", "Gold Pine Resin from corpse", "item"),
@@ -82,14 +125,22 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
     name: "Majula",
     lvl: "1–10",
     items: [
-      item("mj1", "Light bonfire, talk to Emerald Herald — get Estus Flask", "bonfire"),
+      item("mj1", "Light bonfire, talk to Emerald Herald — get Estus Flask", "bonfire", null, undefined, undefined, {
+        progressTier: "route",
+        category: "bonfire",
+      }),
       item("mj3", "Pick up Divine Blessing, Lifegems, Homeward Bones", "item", undefined, undefined, [
         { id: "mj3a", text: "Divine Blessing", items: ["Divine Blessing"] },
         { id: "mj3b", text: "Lifegems", items: ["Lifegems"] },
         { id: "mj3c", text: "Homeward Bones", items: ["Homeward Bones"] },
       ]),
       item("mj5", "Talk to Saulden → Welcome gesture, join Way of Blue", "npc", null, ["gesture:welcome", "covenant:way_of_blue"]),
-      item("mj6", "Hit rock at well — Estus Flask Shard", "item", null, ["estus:1"]),
+      item("mj6", "Hit rock at well — Estus Flask Shard", "item", null, ["estus:1"], undefined, {
+        progressTier: "collectible",
+        category: "loot",
+        flags: { achievement: true },
+        ngCycle: "any",
+      }),
       item("mj4", "Building: kill Hollow, get Lloyd's Talismans", "item"),
       item("mj10", "Talk to Maughlin the Armorer, buy gear", "npc"),
       item("mj11", "Ladder by Maughlin — Titanite Shard (chest)", "item"),
@@ -104,18 +155,33 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
         { id: "mj12d", text: "Homeward Bone", items: ["Homeward Bone"] },
       ]),
       item("mj19", "Straid / Ornifex (Majula): Moonlight Greatsword (Old Paledrake Soul), boss weapons", "item"),
-      item("mj20", "Chime of Want — Ornifex (Nashandra soul, after final boss)", "item"),
+      item("mj20", "Chime of Want — Ornifex (Nashandra soul, after final boss)", "item", null, undefined, undefined, {
+        progressTier: "optional",
+        category: "loot",
+        flags: { missable: true },
+        ngCycle: "ng2plus",
+      }),
     ],
   },
   forest_of_fallen_giants: {
     name: "Forest of Fallen Giants",
     lvl: "10–20",
     items: [
-      item("fg1", "Crestfallen's Retreat bonfire", "bonfire"),
+      item("fg1", "Crestfallen's Retreat bonfire", "bonfire", null, undefined, undefined, {
+        progressTier: "route",
+        category: "bonfire",
+      }),
       item("fg2", "River: Lifegem, Soul of a Lost Undead. Up ladders: jump gap → Shortsword", "item"),
       item("fg3", "Kill Heide Knight (sits by tree) — Heide Knight Sword", "item"),
-      item("fg4", "Cardinal Tower bonfire", "bonfire"),
-      item("fg5", "Talk to Merchant Hag Melentia — buy Lenigrast's Key (1000), Pharros Lockstone (4000)", "npc"),
+      item("fg4", "Cardinal Tower bonfire", "bonfire", null, undefined, undefined, {
+        progressTier: "route",
+        category: "bonfire",
+      }),
+      item("fg5", "Talk to Merchant Hag Melentia — buy Lenigrast's Key (1000), Pharros Lockstone (4000)", "npc", null, undefined, undefined, {
+        progressTier: "route",
+        category: "npc",
+        flags: { routeHint: true },
+      }),
       item("fg6", "Spend 10,000 with Melentia → Covetous Silver Serpent Ring +1. Exhaust dialogue (moves to Majula)", "npc"),
       item("fg7", "Upstairs: break door → Small Leather Shield, Repair Powder, Hand Axe, Lifegem", "item"),
       item("fg8", "Ambush room chest — Estus Flask Shard + Small White Sign Soapstone", "item", null, ["estus:2"], [
@@ -124,24 +190,50 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       ]),
       item("fg9", "Drop on branch: Divine Blessing. Scaffolding: Human Effigy", "item"),
       item("fg10", "Caves below: Hollow Soldier Helm, Soul of a Proud Knight", "item"),
-      item("fg11", "Past Flame Salamander — Fire Longsword (chest) ★ great early weapon", "key"),
-      item("fg12", "Return to Majula: upgrade Estus, open Lenigrast's shop, get Short Bow behind him", "key"),
+      item("fg11", "Past Flame Salamander — Fire Longsword (chest) ★ great early weapon", "key", null, undefined, undefined, {
+        progressTier: "route",
+        category: "key",
+        flags: { routeHint: true },
+      }),
+      item("fg12", "Return to Majula: upgrade Estus, open Lenigrast's shop, get Short Bow behind him", "key", null, undefined, undefined, {
+        progressTier: "route",
+        category: "key",
+      }),
       item("fg16", "Talk to Cale the Cartographer (cave) — get House Key for Majula mansion", "npc"),
       item("fg14", "Pursuer platform: bait firebomb hollow to break wall → Large Titanite Shard, Firebomb x3, Crystal Lizard", "item", null, ["breakable"]),
       item("fg20", "Illusory (press A/X): Cardinal Tower long stairway — right wall at bottom → Amber Herb, Sorcerer's Staff (shortcut)", "item", null, ["illusory"]),
       item("fg21", "Pharros: room under ballista trap (near Pate) → Titanite Slab, Chloranthy Ring", "item", null, ["pharros"]),
-      item("fg15", "Early Pursuer fight (optional) — Ring of Blades, Soul of the Pursuer", "boss"),
-      item("fg17", "BOSS: THE LAST GIANT — Summon: Pate (if trap done), Luet", "boss"),
-      item("fg18", "Use Soldier Key: opens Pursuer door, Soldier's Rest, King's Gate", "key"),
-      item("fg19", "BOSS: THE PURSUER (boss room) — bird nest after → Lost Bastille", "boss"),
-      item("fg13", "Optional: Silvercat drop to salamander pit — Hawk Ring, Flame Quartz Ring +1, Rebel's Greatshield", "item"),
+      item("fg15", "Early Pursuer fight (optional) — Ring of Blades, Soul of the Pursuer", "boss", null, undefined, undefined, {
+        progressTier: "optional",
+        category: "boss",
+      }),
+      item("fg17", "BOSS: THE LAST GIANT — Summon: Pate (if trap done), Luet", "boss", null, undefined, undefined, {
+        progressTier: "route",
+        category: "boss",
+        flags: { achievement: true },
+      }),
+      item("fg18", "Use Soldier Key: opens Pursuer door, Soldier's Rest, King's Gate", "key", null, undefined, undefined, {
+        progressTier: "route",
+        category: "key",
+      }),
+      item("fg19", "BOSS: THE PURSUER (boss room) — bird nest after → Lost Bastille", "boss", null, undefined, undefined, {
+        progressTier: "route",
+        category: "boss",
+      }),
+      item("fg13", "Optional: Silvercat drop to salamander pit — Hawk Ring, Flame Quartz Ring +1, Rebel's Greatshield", "item", null, undefined, undefined, {
+        progressTier: "optional",
+        category: "loot",
+      }),
     ],
   },
   heides_tower: {
     name: "Heide's Tower of Flame",
     lvl: "30–40",
     items: [
-      item("ht1", "Tower of Flame bonfire", "bonfire"),
+      item("ht1", "Tower of Flame bonfire", "bonfire", null, undefined, undefined, {
+        progressTier: "route",
+        category: "bonfire",
+      }),
       item("ht2", "Upper level: Human Effigy, Dark Torches, Soul of a Proud Knight, Old Knight Halberd", "item", undefined, undefined, [
         { id: "ht2a", text: "Human Effigy", items: ["Human Effigy"] },
         { id: "ht2b", text: "Dark Torches", items: ["Dark Torches"] },
@@ -150,7 +242,10 @@ export const AREAS: Record<AreaId, Omit<Area, "id">> = {
       ]),
       item("ht3", "Chest (Syan Knight guard) — Sublime Bone Dust", "item", null, ["bone:1"]),
       item("ht4", "Bottom of spiral: Monastery Charm", "item"),
-      item("ht5", "BOSS: DRAGONRIDER — pull both levers for full platform", "boss"),
+      item("ht5", "BOSS: DRAGONRIDER — pull both levers for full platform", "boss", null, undefined, undefined, {
+        progressTier: "route",
+        category: "boss",
+      }),
       item("ht6", "Talk to Licia of Lindeldt (after Dragonrider) — exhaust dialogue → moves to Majula rotunda", "npc"),
       item("ht7", "BOSS: OLD DRAGONSLAYER (Cathedral of Blue) — Old Leo Ring", "boss"),
       item("ht8", "Blue Sentinel Targray — need Token of Fidelity → join Blue Sentinels → Duel Bow gesture", "npc", null, ["gesture:duel_bow", "covenant:blue_sentinels"]),

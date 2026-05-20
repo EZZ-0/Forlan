@@ -4,7 +4,19 @@
  * Focus on bosses; expanded coverage for notable enemies.
  */
 
+import { inferAbsorption } from "../utils/inferEnemyAbsorption";
+
 export type EnemyType = "boss" | "miniboss" | "elite" | "common";
+
+export interface EnemyAbsorption {
+  strike?: number;
+  slash?: number;
+  thrust?: number;
+  magic?: number;
+  fire?: number;
+  lightning?: number;
+  dark?: number;
+}
 
 export interface EnemyEntry {
   id: string;
@@ -17,6 +29,8 @@ export interface EnemyEntry {
   buffs?: string[];
   note?: string;
   optional?: boolean;
+  /** Numeric absorption % (negative = weak). Pilot bosses in Wave 4. */
+  absorption?: EnemyAbsorption;
 }
 
 // --- BUFFS & RESINS (damage type → consumables) ---
@@ -30,11 +44,11 @@ export const ELEMENTAL_BUFFS: Record<string, string[]> = {
 };
 
 // --- BOSSES ---
-export const ENEMY_WEAKNESSES: EnemyEntry[] = [
+const ENEMY_WEAKNESSES_RAW: EnemyEntry[] = [
   // Base game bosses
-  { id: "last_giant", name: "The Last Giant", area: "Forest of Fallen Giants", type: "boss", weaknesses: ["Fire", "Lightning"], resistances: [], counters: ["Attack detached arm when low HP"], buffs: ["Gold Pine Resin", "Charcoal Pine Resin"], optional: false },
-  { id: "pursuer", name: "The Pursuer", area: "Forest of Fallen Giants / Drangleic Castle", type: "boss", weaknesses: ["Lightning", "Strike", "Poison"], resistances: ["Dark"], counters: ["Ballista (platform fight)", "Strafe left", "Parry"], buffs: ["Gold Pine Resin", "Poison Mist"], optional: true },
-  { id: "dragonrider", name: "Dragonrider", area: "Heide's Tower of Flame", type: "boss", weaknesses: ["Fire", "Lightning", "Strike"], resistances: [], counters: ["Strafing", "Easy to parry", "Arrow cheese from bridge"], buffs: ["Gold Pine Resin", "Charcoal Pine Resin"], optional: false },
+  { id: "last_giant", name: "The Last Giant", area: "Forest of Fallen Giants", type: "boss", weaknesses: ["Fire", "Lightning"], resistances: [], counters: ["Attack detached arm when low HP"], buffs: ["Gold Pine Resin", "Charcoal Pine Resin"], optional: false, absorption: { fire: -30, lightning: -30 } },
+  { id: "pursuer", name: "The Pursuer", area: "Forest of Fallen Giants / Drangleic Castle", type: "boss", weaknesses: ["Lightning", "Strike", "Poison"], resistances: ["Dark"], counters: ["Ballista (platform fight)", "Strafe left", "Parry"], buffs: ["Gold Pine Resin", "Poison Mist"], optional: true, absorption: { lightning: -40, strike: -20, dark: 20 } },
+  { id: "dragonrider", name: "Dragonrider", area: "Heide's Tower of Flame", type: "boss", weaknesses: ["Fire", "Lightning", "Strike"], resistances: [], counters: ["Strafing", "Easy to parry", "Arrow cheese from bridge"], buffs: ["Gold Pine Resin", "Charcoal Pine Resin"], optional: false, absorption: { fire: -25, lightning: -25, strike: -15 } },
   { id: "old_dragonslayer", name: "Old Dragonslayer", area: "Heide's Tower of Flame", type: "boss", weaknesses: ["Fire", "Magic"], resistances: ["Dark"], counters: ["Strafe left for thrusts"], buffs: ["Charcoal Pine Resin", "Magic Weapon"], optional: true },
   { id: "flexile_sentry", name: "Flexile Sentry", area: "No-Man's Wharf", type: "boss", weaknesses: ["Fire", "Lightning", "Poison"], resistances: [], counters: ["Attack one side at a time", "Lucatiel summon"], buffs: ["Gold Pine Resin", "Poison Mist"], optional: true },
   { id: "ruin_sentinels", name: "Ruin Sentinels", area: "Lost Bastille", type: "boss", weaknesses: ["Lightning", "Poison", "Strike", "Magic"], resistances: [], counters: ["Focus one first", "Strike weapons (mace, club)"], buffs: ["Gold Pine Resin", "Heavy Homing Soul Arrow"], optional: true },
@@ -87,3 +101,9 @@ export const ENEMY_WEAKNESSES: EnemyEntry[] = [
   { id: "spiders", name: "Spiders", area: "Brightstone Cove", type: "common", weaknesses: ["Fire"], resistances: [], counters: ["Torch scares", "Torch in left hand"], buffs: ["Charcoal Pine Resin"] },
   { id: "maneaters", name: "Maneater (bug creatures)", area: "Shaded Woods / Shrine of Amana", type: "common", weaknesses: ["Fire", "Poison"], resistances: [], counters: ["Fire", "Avoid poison spit"], buffs: ["Charcoal Pine Resin"] },
 ];
+
+export const ENEMY_WEAKNESSES: EnemyEntry[] = ENEMY_WEAKNESSES_RAW.map((entry) => {
+  if (entry.absorption || entry.type !== "boss") return entry;
+  const inferred = inferAbsorption(entry.weaknesses, entry.resistances);
+  return inferred ? { ...entry, absorption: inferred } : entry;
+});

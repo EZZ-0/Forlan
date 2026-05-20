@@ -12,7 +12,9 @@ export type View =
   | "items"
   | "enemies"
   | "simulator"
-  | "getop";
+  | "getop"
+  | "worldmap"
+  | "timer";
 
 const MAIN_TABS: [View, string][] = [
   ["dashboard", "Overview"],
@@ -25,6 +27,8 @@ const MAIN_TABS: [View, string][] = [
   ["enemies", "Enemies"],
   ["simulator", "Simulator"],
   ["getop", "Get OP"],
+  ["worldmap", "Map"],
+  ["timer", "Timer"],
 ];
 
 export function Header({

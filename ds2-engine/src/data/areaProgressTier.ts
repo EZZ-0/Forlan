@@ -3,24 +3,7 @@
  */
 
 import type { AreaItem, ProgressTier } from "./areas";
-import { SEMI_FAST_SKIP_IDS, SEMI_FAST_MILESTONES } from "./areaDependencies";
-
-const ROUTE_MILESTONE_IDS = new Set(
-  SEMI_FAST_MILESTONES.flatMap((m) => m.requiredItemIds)
-);
-
-const ROUTE_EXPLICIT_IDS = new Set<string>([
-  ...ROUTE_MILESTONE_IDS,
-  "fg17",
-  "sr5",
-  "ik9",
-  "bc8",
-  "dc1",
-  "uc6",
-  "ak1",
-  "da6",
-  "tw1",
-]);
+import { SEMI_FAST_SKIP_IDS, ROUTE_EXPLICIT_IDS } from "./semiFastConstants";
 
 const COLLECTIBLE_TAG_PREFIXES = ["estus:", "bone:", "gesture:"];
 

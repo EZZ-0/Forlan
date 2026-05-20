@@ -6,6 +6,7 @@ import {
   getBuildLevels,
   migrateProgressState,
 } from "../utils/buildProgress";
+import { parseEngineExport, toEngineExport } from "../import/parseEngineExport";
 
 const DEFAULT_STATE: ProgressState = {
   checked: {},
@@ -170,9 +171,7 @@ export function useProgress(profileId: string | null) {
   }, [buildTemplateId]);
 
   const exportProgress = useCallback(() => {
-    const toExport = { ...state };
-    delete toExport.buildLevels;
-    const data = JSON.stringify(toExport, null, 2);
+    const data = JSON.stringify(toEngineExport(state), null, 2);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -188,12 +187,17 @@ export function useProgress(profileId: string | null) {
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result as string) as unknown;
-        setState(migrateLegacy(parsed));
+        const fromEngine = parseEngineExport(parsed);
+        setState(fromEngine ? migrateLegacy(fromEngine) : migrateLegacy(parsed));
       } catch {
         // ignore invalid
       }
     };
     reader.readAsText(file);
+  }, []);
+
+  const applyImportedState = useCallback((next: ProgressState) => {
+    setState(migrateLegacy(next));
   }, []);
 
   const resetAll = useCallback(() => {
@@ -225,6 +229,7 @@ export function useProgress(profileId: string | null) {
     setBuildTemplateId,
     exportProgress,
     importProgress,
+    applyImportedState,
     resetAll,
   };
 }

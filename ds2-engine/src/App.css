@@ -91,12 +91,13 @@ html, body {
   }
 }
 
-/* Areas tab: hybrid layout — collapsible sidebar + 2x2 fixed equal quadrants */
+/* Areas tab: Wave 7 — collapsible sidebar + tabbed single-column workspace */
 .area-hybrid-layout {
   display: flex;
   gap: 12px;
   width: 100%;
   min-height: 0;
+  flex: 1;
 }
 
 .area-sidebar-wrapper {
@@ -144,27 +145,65 @@ html, body {
 .area-main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* 2 columns x 3 rows — main area grid, each cell same size, content scrolls inside */
-.area-quadrants-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 340px);
-  gap: 16px;
+.area-workspace-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.area-quadrant {
-  min-height: 340px;
+.area-workspace-tab {
+  padding: 8px 14px;
+  font-size: 12px;
+  background: #1a1714;
+  border: 1px solid #2a2420;
+  border-radius: 10px;
+  color: #9a8a6a;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.area-workspace-tab--active {
+  background: rgba(200, 160, 48, 0.15);
+  border-color: rgba(200, 160, 48, 0.45);
+  color: #c8a030;
+  font-weight: 600;
+}
+
+.area-workspace-tab-badge {
+  margin-left: 6px;
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+/* Single scrollable panel (replaces 2×3 quadrant grid) */
+.area-workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.area-workspace-panel {
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100vh - 220px);
   overflow-y: auto;
   background: #1a1714;
   border: 1px solid #2a2420;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+}
+
+.area-focus-mode .area-workspace-panel {
+  max-height: calc(100vh - 180px);
 }
 
 /* Floating box for right panel (notes, farming, drops) */
@@ -176,17 +215,17 @@ html, body {
   margin-bottom: 12px;
 }
 
-/* Area tab typography — improved readability, no data cut off */
-.area-quadrant,
+/* Area tab typography */
+.area-workspace-panel,
 .area-floating-box {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
-.area-quadrant .section-panel-content,
+.area-workspace-panel .section-panel-content,
 .area-floating-box .section-panel-content {
   padding: 14px 16px 16px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
 }
 
@@ -216,17 +255,16 @@ html, body {
   }
 }
 
-/* Mobile: 1 column, rows auto */
 @media (max-width: 600px) {
-  .area-quadrants-grid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: 300px;
-  }
-  .area-quadrant {
-    min-height: 300px;
+  .area-workspace-panel {
+    max-height: calc(100vh - 260px);
   }
   .area-cards-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .area-workspace-tab {
+    padding: 6px 10px;
+    font-size: 11px;
   }
 }
 

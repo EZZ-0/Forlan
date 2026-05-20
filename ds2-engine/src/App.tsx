@@ -74,9 +74,28 @@ import type { UnlockConditionType } from "./data";
 import { getQuestStepsInArea } from "./utils/questArea";
 import { getGoBackAlerts } from "./utils/goBackAlerts";
 import type { AreaId } from "./data/areas";
-import { TrackersView, SimulatorView, ItemDatabaseView, GetOpView } from "./views";
+import {
+  TrackersView,
+  SimulatorView,
+  ItemDatabaseView,
+  GetOpView,
+  WorldMapView,
+  SplitTimerView,
+  MajulaHubDiagram,
+} from "./views";
+import { ProgressImportCard } from "./components/ProgressImportCard";
+import { computeCollectionProgress } from "./utils/collectionProgress";
 import { BuildDetailsPanel } from "./views/BuildDetailsPanel";
 import { getEnemyMatchupTier, MATCHUP_TIER_META } from "./data/buildDetails";
+import { useAreaFilters } from "./hooks/useAreaFilters";
+import { filterAreaItems } from "./data/checklistMetadata";
+import {
+  AreaFiltersBar,
+  ChecklistLegend,
+  ChecklistRow,
+  AreaWorkspaceTabs,
+  type AreaWorkspacePanel,
+} from "./views/area";
 
 const bg = colors.bg;
 const bgCard = colors.bgCard;
@@ -87,7 +106,19 @@ const lightText = colors.lightText;
 const warnRed = colors.warnRed;
 const successGreen = colors.successGreen;
 
-type View = "dashboard" | "area" | "quests" | "trackers" | "build" | "farm" | "items" | "enemies" | "simulator" | "getop";
+type View =
+  | "dashboard"
+  | "area"
+  | "quests"
+  | "trackers"
+  | "build"
+  | "farm"
+  | "items"
+  | "enemies"
+  | "simulator"
+  | "getop"
+  | "worldmap"
+  | "timer";
 
 export default function App() {
   const profiles = useProfiles();
@@ -102,6 +133,7 @@ export default function App() {
     setBuildTemplateId,
     exportProgress,
     importProgress,
+    applyImportedState,
     resetAll,
     buildTemplateId,
     activeBuildLevels,
@@ -120,7 +152,7 @@ export default function App() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [buildOpenSub, setBuildOpenSub] = useState<"roadmap" | "checklist" | "equip" | "details" | "farming" | null>(null);
   const [enemiesSub, setEnemiesSub] = useState<"weaknesses" | "buffs" | "drops">("weaknesses");
-  const [buildContextOpen, setBuildContextOpen] = useState(true);
+  const [buildContextOpen, setBuildContextOpen] = useState(false);
   const [areaContextOpen, setAreaContextOpen] = useState(true);
   const [areaFocusMode, setAreaFocusMode] = useState(false);
   const [itemsOpenSub, setItemsOpenSub] = useState<"shop_unlocks" | null>(null);
@@ -221,8 +253,23 @@ export default function App() {
             areaCompletion={(id) => areaCompletion(id, checked)}
             focusMode={focusMode}
             setFocusMode={setFocusMode}
+            exportProgress={exportProgress}
+            applyImportedState={applyImportedState}
+            lastExport={state.lastExport}
           />
         )}
+        {view === "worldmap" && (
+          <WorldMapView
+            selectedArea={selectedArea}
+            onSelectArea={setSelectedArea}
+            onOpenAreaChecklist={(id) => {
+              setSelectedArea(id);
+              setView("area");
+            }}
+            areaCompletion={(id) => areaCompletion(id, checked)}
+          />
+        )}
+        {view === "timer" && <SplitTimerView />}
         {view === "area" && (
           <SplitContextPanel
             mainContent={
@@ -242,6 +289,7 @@ export default function App() {
                 buildSteps={buildSteps}
                 areaFocusMode={areaFocusMode}
                 setAreaFocusMode={setAreaFocusMode}
+                profileId={activeProfileId}
               />
             }
             rightPanel={
@@ -517,6 +565,9 @@ function DashboardView({
   areaCompletion,
   focusMode,
   setFocusMode,
+  exportProgress,
+  applyImportedState,
+  lastExport,
 }: {
   state: import("./types").ProgressState;
   stats: ReturnType<typeof computeStats>;
@@ -530,7 +581,11 @@ function DashboardView({
   areaCompletion: (id: AreaId) => { done: number; total: number; pct: number };
   focusMode: boolean;
   setFocusMode: (v: boolean) => void;
+  exportProgress: () => void;
+  applyImportedState: (s: import("./types").ProgressState) => void;
+  lastExport?: string;
 }) {
+  const collection = computeCollectionProgress(checked);
   const buildSuggest = useBuildSuggest(state);
   const getAreaSkimmed = (a: AreaId) => !!checked[getSkimmedKey(a)];
   const steps = buildSteps ?? BUILD_STEPS;
@@ -670,6 +725,40 @@ function DashboardView({
         <div style={{ maxWidth: 400, margin: "12px auto 0" }}>
           <ProgressBar done={stats.checkedCount} total={stats.total} height={8} glow />
         </div>
+        <p style={{ fontSize: 10, color: dimText, marginTop: 8, lineHeight: 1.4 }}>
+          Walkthrough % = area checklists. Collection (gestures, covenants) is tracked under Trackers.
+        </p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            marginTop: 12,
+            maxWidth: 400,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          <div style={{ fontSize: 10, color: dimText }}>
+            <div style={{ color: gold, marginBottom: 4 }}>Walkthrough</div>
+            <ProgressBar done={stats.checkedCount} total={stats.total} height={6} />
+          </div>
+          <div style={{ fontSize: 10, color: dimText }}>
+            <div style={{ color: gold, marginBottom: 4 }}>Collection</div>
+            <ProgressBar
+              done={collection.gestures.done + collection.covenants.done}
+              total={collection.gestures.total + collection.covenants.total}
+              height={6}
+            />
+          </div>
+        </div>
+        <div style={{ maxWidth: 400, margin: "16px auto 0" }}>
+          <ProgressImportCard
+            onExport={exportProgress}
+            onImport={applyImportedState}
+            lastExport={lastExport}
+          />
+        </div>
         <button
           onClick={() => setFocusMode(!focusMode)}
           style={{
@@ -686,6 +775,51 @@ function DashboardView({
           {focusMode ? "Focus mode: ON" : "Focus mode: OFF"}
         </button>
       </div>
+      </div>
+
+      <div
+        style={{
+          marginBottom: 24,
+          padding: 14,
+          background: bgCard,
+          borderRadius: 16,
+          border: "1px solid #2a2420",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <div style={{ fontFamily: "'Cinzel', Georgia, serif", fontSize: 12, color: gold, letterSpacing: 1 }}>
+            REGION MAP
+          </div>
+          <button
+            type="button"
+            onClick={() => setView("worldmap")}
+            style={{
+              fontSize: 11,
+              color: gold,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            Full map →
+          </button>
+        </div>
+        <MajulaHubDiagram
+          selectedArea={null}
+          onSelectArea={(id) => {
+            setSelectedArea(id);
+            setView("area");
+          }}
+          areaCompletion={(id) => areaCompletion(id)}
+        />
       </div>
 
       {/* Right column: Questlines + Trackers */}
@@ -1189,6 +1323,7 @@ function AreaView({
   buildSteps,
   areaFocusMode,
   setAreaFocusMode,
+  profileId,
 }: {
   selectedArea: AreaId;
   setSelectedArea: (a: AreaId | null) => void;
@@ -1202,10 +1337,21 @@ function AreaView({
   buildSteps?: import("./data/buildChecklist").BuildStep[];
   areaFocusMode: boolean;
   setAreaFocusMode: (v: boolean | ((p: boolean) => boolean)) => void;
+  profileId: string | null;
 }) {
   const [areaSubTab, setAreaSubTab] = useState<"checklist" | "semi_fast">("checklist");
   const [areaSearchFilter, setAreaSearchFilter] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showChecklistLegend, setShowChecklistLegend] = useState(false);
+  const [workspacePanel, setWorkspacePanel] = useState<AreaWorkspacePanel>("checklist");
+  const {
+    filters,
+    setViewMode,
+    toggleHideCompleted,
+    setNgFilter,
+    toggleCategory,
+    clearCategories,
+  } = useAreaFilters(profileId);
 
   useEffect(() => {
     if (areaSubTab === "semi_fast" && !SEMI_FAST_AREA_ORDER.includes(selectedArea)) {
@@ -1217,7 +1363,29 @@ function AreaView({
 
   const area = getArea(selectedArea);
   const isSemiFast = areaSubTab === "semi_fast";
-  const items = isSemiFast ? getSemiFastItems(area) : area.items;
+
+  useEffect(() => {
+    if (areaFocusMode) setWorkspacePanel("checklist");
+  }, [areaFocusMode]);
+
+  useEffect(() => {
+    if (isSemiFast) setWorkspacePanel("checklist");
+  }, [isSemiFast, selectedArea]);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith("#progress-")) return;
+    setWorkspacePanel("checklist");
+    const id = hash.slice(1);
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [selectedArea]);
+  const rawItems = isSemiFast ? getSemiFastItems(area) : area.items;
+  const items =
+    areaSubTab === "checklist" && !isSemiFast
+      ? filterAreaItems(rawItems, checked, filters)
+      : rawItems;
   const ac = isSemiFast ? areaCompletionFromItems(items, checked) : areaCompletion(selectedArea, checked);
   const done = ac.done;
   const total = ac.total;
@@ -1255,6 +1423,29 @@ function AreaView({
 
   const hasSecrets = illusoryHere.length > 0 || pharrosHere.length > 0 || breakableHere.length > 0;
 
+  const hiddenPanels: AreaWorkspacePanel[] =
+    areaFocusMode || isSemiFast ? ["guide", "quests", "summons", "secrets", "build"] : [];
+
+  const checkIdsForGuide = items.flatMap((i) =>
+    i.subItems?.length ? i.subItems!.map((s) => s.id) : [i.id]
+  );
+  const guidanceDone = checkIdsForGuide.filter((id) => getItemDetail(id) && checked[id]).length;
+
+  const tabBadges: Partial<Record<AreaWorkspacePanel, string>> = {
+    checklist: `${done}/${total}`,
+    guide: has100Guidance ? `${guidanceDone}/${checkIdsForGuide.length}` : "—",
+    quests:
+      questStepsHere.length > 0
+        ? `${questStepsHere.filter((qs) => checked[qs.ref]).length}/${questStepsHere.length}`
+        : "0",
+    summons: AREA_SUMMONS[selectedArea]?.length ? String(AREA_SUMMONS[selectedArea]!.length) : "0",
+    secrets: hasSecrets ? String(illusoryHere.length + pharrosHere.length + breakableHere.length) : "0",
+    build:
+      stepsForAccordion.length > 0
+        ? `${stepsForAccordion.filter((s) => checked[s.progressId]).length}/${stepsForAccordion.length}`
+        : "0",
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 1400 }}>
       {/* Sub-tabs */}
@@ -1288,9 +1479,27 @@ function AreaView({
           Semi-Fast Run
         </button>
       </div>
+      {isSemiFast && (
+        <div
+          style={{
+            fontSize: 11,
+            color: dimText,
+            lineHeight: 1.55,
+            padding: "10px 12px",
+            background: "rgba(200,160,48,0.06)",
+            border: `1px solid ${gold}33`,
+            borderRadius: 10,
+          }}
+        >
+          <strong style={{ color: gold }}>Semi-Fast</strong> uses the same checklist rows as Areas, but only areas on the
+          efficient route. Rows tagged <strong style={{ color: "#6b9e3a" }}>Path</strong> in the full checklist match
+          main-path tiers used here — optional skips and loot are hidden on this tab.
+        </div>
+      )}
 
       <div className="area-hybrid-layout">
         {/* Collapsible sidebar: area cards grid */}
+        {!areaFocusMode && (
         <div className={`area-sidebar-wrapper ${sidebarCollapsed ? "collapsed" : ""}`}>
           <aside className="area-sidebar">
           <button
@@ -1363,8 +1572,9 @@ function AreaView({
           </div>
           </aside>
         </div>
+        )}
 
-        {/* Main content: sticky header + 2x2 quadrants */}
+        {/* Main content: workspace tabs + single scroll panel */}
         <main className="area-main">
           <div style={{ position: "sticky", top: 0, zIndex: 10, background: bg, paddingBottom: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
@@ -1406,21 +1616,46 @@ function AreaView({
             </div>
           </div>
 
-          <div className={`area-quadrants-grid ${areaFocusMode ? "area-focus-mode" : ""}`}>
-            {/* 1. CHECKLIST */}
-            <div className="area-quadrant">
+          {!areaFocusMode && !isSemiFast && (
+            <AreaWorkspaceTabs
+              active={workspacePanel}
+              onChange={setWorkspacePanel}
+              hidden={hiddenPanels}
+              badges={tabBadges}
+            />
+          )}
+
+          <div className={`area-workspace ${areaFocusMode ? "area-focus-mode" : ""}`}>
+            {(workspacePanel === "checklist" || areaFocusMode || isSemiFast) && (
+            <div className="area-workspace-panel" role="tabpanel">
               <SectionPanel
                 title="CHECKLIST"
-                badge={`${done}/${total} · route ${routeComp.done}/${routeComp.total}`}
+                badge={`${done}/${total} · main path ${routeComp.done}/${routeComp.total}`}
                 headerExtra={
                   <AreaBulkMarkButtons
-                    groups={bulkGroups.filter((g) => g.label === "Route" || g.label === "Checklist")}
+                    groups={bulkGroups.filter((g) => g.label === "Main path" || g.label === "Checklist")}
                     onMark={bulkMark}
                     onClear={bulkClear}
                     compact
                   />
                 }
               >
+        {areaSubTab === "checklist" && !isSemiFast && (
+          <>
+            <AreaFiltersBar
+              filters={filters}
+              setViewMode={setViewMode}
+              toggleHideCompleted={toggleHideCompleted}
+              setNgFilter={setNgFilter}
+              toggleCategory={toggleCategory}
+              clearCategories={clearCategories}
+              showLegend={showChecklistLegend}
+              onToggleLegend={() => setShowChecklistLegend((v) => !v)}
+              defaultCollapsed
+            />
+            {showChecklistLegend && <ChecklistLegend />}
+          </>
+        )}
         <div style={{ display: "grid", gap: 8 }}>
           {/* Quest assignments — interconnected with Quest window & Quest tab */}
           {questStepsHere.length > 0 && (
@@ -1459,99 +1694,25 @@ function AreaView({
               </div>
             </div>
           )}
-          {items.map((item) => {
-            const isWarn = item.type === "warn";
-            const hasSubItems = item.subItems && item.subItems.length > 0;
-            const typeIcon = isWarn ? "" : item.type === "boss" ? "†" : item.type === "npc" ? "◉" : item.type === "bonfire" ? "⊕" : item.type === "key" ? "※" : "•";
-            if (hasSubItems) {
-              const subDone = item.subItems!.filter((s) => checked[s.id]).length;
-              const subTotal = item.subItems!.length;
-              return (
-                <div key={item.id} style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 13, color: dimText, marginBottom: 6, paddingLeft: 4, lineHeight: 1.6 }}>
-                    <span style={{ marginRight: 6 }}>{typeIcon}</span>
-                    {item.text} <span style={{ fontSize: 12 }}>({subDone}/{subTotal})</span>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4, paddingLeft: 14, borderLeft: "2px solid #2a2420" }}>
-                    {item.subItems!.map((s) => {
-                      const sDone = checked[s.id];
-                      return (
-                        <div
-                          key={s.id}
-                          onClick={() => toggle(s.id)}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            padding: "8px 12px",
-                            borderRadius: 8,
-                            cursor: "pointer",
-                            background: sDone ? "rgba(200,160,48,0.06)" : "transparent",
-                            opacity: sDone ? 0.7 : 1,
-                          }}
-                        >
-                          <div style={{ width: 20, height: 20, borderRadius: 16, border: `2px solid ${sDone ? gold : "#3a342a"}`, background: sDone ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            {sDone && <span style={{ color: "#0c0b0a", fontSize: 11, fontWeight: 700 }}>✓</span>}
-                          </div>
-                          <span style={{ color: sDone ? dimText : lightText, fontSize: 13, lineHeight: 1.6, textDecoration: sDone ? "line-through" : "none" }}>{s.text}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            }
-            const itemDone = checked[item.id];
-            return (
-              <div
-                key={item.id}
-                onClick={() => !isWarn && toggle(item.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 12,
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  cursor: isWarn ? "default" : "pointer",
-                  background: isWarn ? "rgba(196,64,64,0.12)" : itemDone ? "rgba(200,160,48,0.06)" : "transparent",
-                  borderLeft: isWarn ? `3px solid ${warnRed}` : "3px solid transparent",
-                  opacity: itemDone && !isWarn ? 0.55 : 1,
-                }}
-              >
-                {!isWarn && (
-                  <div style={{ width: 22, height: 22, borderRadius: 16, border: `2px solid ${itemDone ? gold : "#3a342a"}`, background: itemDone ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                    {itemDone && <span style={{ color: "#0c0b0a", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                  </div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: isWarn ? warnRed : itemDone ? dimText : lightText, fontSize: 14, lineHeight: 1.65, textDecoration: itemDone && !isWarn ? "line-through" : "none" }}>
-                    <span style={{ marginRight: 6 }}>{typeIcon}</span>
-                    {item.text}
-                  </div>
-                  {item.questRef && (
-                    <div style={{ fontSize: 12, color: dimText, marginTop: 4, display: "flex", gap: 8, flexWrap: "wrap", lineHeight: 1.6 }}>
-                      {Object.entries(QUESTS).map(([qk, q]) => {
-                        const step = q.steps.find((s) => (s.ref ?? s.id) === item.id) || q.bosses.find((b) => b.ref === item.id);
-                        if (!step) return null;
-                        return (
-                          <span key={qk} onClick={(e) => { e.stopPropagation(); setSelectedQuest(qk); setView("quests"); }} style={{ background: q.color + "22", color: q.color, padding: "2px 6px", borderRadius: 16, cursor: "pointer" }}>
-                            {q.icon} {q.name.split(" ")[0]}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {items.map((item) => (
+            <ChecklistRow
+              key={item.id}
+              item={item}
+              checked={checked}
+              onToggle={toggle}
+              onQuestClick={(qk) => {
+                setSelectedQuest(qk);
+                setView("quests");
+              }}
+            />
+          ))}
         </div>
               </SectionPanel>
             </div>
+            )}
 
-            {/* 2. 100% GUIDANCE (next to checklist, hidden in focus mode) */}
-            {!areaFocusMode && (
-            <div className="area-quadrant">
+            {workspacePanel === "guide" && (
+            <div className="area-workspace-panel" role="tabpanel">
               <SectionPanel title="100% GUIDANCE" badge={has100Guidance ? `${items.flatMap((i) => i.subItems?.length ? i.subItems!.map((s) => s.id) : [i.id]).filter((id) => getItemDetail(id)).length}/${items.flatMap((i) => i.subItems?.length ? i.subItems!.map((s) => s.id) : [i.id]).length}` : "0"}>
           {has100Guidance ? (
           <>
@@ -1616,9 +1777,8 @@ function AreaView({
             </div>
             )}
 
-            {/* 3. QUESTS (hidden in focus mode) */}
-            {!areaFocusMode && (
-            <div className="area-quadrant">
+            {workspacePanel === "quests" && (
+            <div className="area-workspace-panel" role="tabpanel">
               <SectionPanel
                 title="QUESTS"
                 badge={questStepsHere.length > 0 ? `${questStepsHere.filter((qs) => checked[qs.ref]).length}/${questStepsHere.length}` : "0"}
@@ -1652,9 +1812,8 @@ function AreaView({
             </div>
             )}
 
-            {/* 4. SUMMONS (hidden in focus mode) */}
-            {!areaFocusMode && (
-            <div className="area-quadrant">
+            {workspacePanel === "summons" && (
+            <div className="area-workspace-panel" role="tabpanel">
               <SectionPanel title="NPC SUMMONS" badge={AREA_SUMMONS[selectedArea]?.length ? `${AREA_SUMMONS[selectedArea]!.length}` : "0"}>
           {AREA_SUMMONS[selectedArea] && AREA_SUMMONS[selectedArea]!.length > 0 ? (
           <>
@@ -1681,9 +1840,8 @@ function AreaView({
             </div>
             )}
 
-            {/* 5. SECRETS (hidden in focus mode) */}
-            {!areaFocusMode && (
-            <div className="area-quadrant">
+            {workspacePanel === "secrets" && (
+            <div className="area-workspace-panel" role="tabpanel">
               <SectionPanel
                 title="SECRETS"
                 badge={hasSecrets ? `${illusoryHere.length + pharrosHere.length + breakableHere.length}` : "0"}
@@ -1745,9 +1903,8 @@ function AreaView({
             </div>
             )}
 
-            {/* 6. BUILD (hidden in focus mode) */}
-            {!areaFocusMode && (
-            <div className="area-quadrant">
+            {workspacePanel === "build" && (
+            <div className="area-workspace-panel" role="tabpanel">
               <SectionPanel
                 title="WEAPONS & BUILD"
                 badge={stepsForAccordion.length > 0 ? `${stepsForAccordion.filter((s) => checked[s.progressId]).length}/${stepsForAccordion.length}` : "0"}
@@ -3117,7 +3274,7 @@ function ItemsView({
           lineHeight: 1.6,
         }}
       >
-        <strong style={{ color: gold }}>Data source:</strong> Fextralife Wiki, IGN Wiki. Scholar of the First Sin (SotFS). Trade with Straid (Lost Bastille) or Ornifex (Brightstone Cove). Wait until you meet both before consuming.
+        <strong style={{ color: gold }}>Engine database.</strong> Scholar of the First Sin (SotFS). Trade with Straid (Lost Bastille) or Ornifex (Brightstone Cove). Wait until you meet both before consuming.
       </div>
 
       <div
@@ -4022,6 +4179,7 @@ function EnemiesView({
               return (
               <div
                 key={e.id}
+                id={`enemy-${e.id}`}
                 style={{
                   padding: 14,
                   background: showMatchup ? matchupMeta!.bg : bgCard,
@@ -4082,6 +4240,15 @@ function EnemiesView({
                     </div>
                   )}
                 </div>
+                {e.absorption && (
+                  <div style={{ marginTop: 6, fontSize: 10, color: dimText, fontFamily: "monospace" }}>
+                    <span style={{ color: gold }}>Absorption %:</span>{" "}
+                    {Object.entries(e.absorption)
+                      .filter(([, v]) => v != null)
+                      .map(([k, v]) => `${k} ${v! > 0 ? "+" : ""}${v}`)
+                      .join(" · ")}
+                  </div>
+                )}
                 <div style={{ marginTop: 6, fontSize: 11, color: dimText }}>
                   <span style={{ color: gold }}>Counters:</span> {e.counters.join(" · ")}
                 </div>
@@ -4178,7 +4345,7 @@ function EnemiesView({
             </div>
           </div>
           <div style={{ fontSize: 11, color: dimText, marginBottom: 8 }}>
-            Drops ordered by rarity (most common first). Source: Fextralife, ENEMY_MATERIAL_FARMS.
+            Drops ordered by rarity (most common first). Engine drop tables.
           </div>
           <div style={{ display: "grid", gap: 12 }}>
             {getEnemyDropsFiltered({
@@ -4696,3 +4863,4 @@ function FarmingView({
     </div>
   );
 }
+

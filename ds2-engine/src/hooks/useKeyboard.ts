@@ -13,6 +13,8 @@ const VIEWS = [
   "enemies",
   "simulator",
   "getop",
+  "worldmap",
+  "timer",
 ] as const;
 export type View = (typeof VIEWS)[number];
 

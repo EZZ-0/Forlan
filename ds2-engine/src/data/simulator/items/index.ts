@@ -3,7 +3,7 @@
  */
 
 import type { SimulatorItem } from "../types";
-import { SIMULATOR_WEAPONS, getWeapon } from "./weapons";
+import { ALL_SIMULATOR_WEAPONS, getWeapon } from "./weapons";
 import { SIMULATOR_ARMOR, getArmor } from "./armor";
 import { SIMULATOR_RINGS, getRing } from "./rings";
 import { SIMULATOR_SHIELDS, getShield } from "./shields";
@@ -31,7 +31,7 @@ export function getItemById(id: string): SimulatorItem | undefined {
 
 /** All equipable items (excluding spells) */
 export const ALL_EQUIPABLE_ITEMS: SimulatorItem[] = [
-  ...SIMULATOR_WEAPONS,
+  ...ALL_SIMULATOR_WEAPONS,
   ...SIMULATOR_ARMOR,
   ...SIMULATOR_RINGS,
   ...SIMULATOR_SHIELDS,

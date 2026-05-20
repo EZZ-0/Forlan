@@ -8,6 +8,10 @@ export type View =
   | "build"
   | "farm"
   | "items"
-  | "enemies";
+  | "enemies"
+  | "simulator"
+  | "getop"
+  | "worldmap"
+  | "timer";
 
 export type { AreaId };

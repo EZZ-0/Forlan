@@ -7,6 +7,7 @@
 import type { SimulatorWeapon } from "../types";
 import { fextralife } from "../sources";
 import { DATA_SOURCES } from "../sources";
+import { getWeaponFromDatabase, mergeSimulatorWeapons } from "./weaponsFromDatabase";
 
 export const SIMULATOR_WEAPONS: SimulatorWeapon[] = [
   {
@@ -127,7 +128,9 @@ export const SIMULATOR_WEAPONS: SimulatorWeapon[] = [
   },
 ];
 
-/** Lookup weapons by id */
+export const ALL_SIMULATOR_WEAPONS: SimulatorWeapon[] = mergeSimulatorWeapons(SIMULATOR_WEAPONS);
+
+/** Lookup weapons by id (curated overrides + weaponsFull merge) */
 export function getWeapon(id: string): SimulatorWeapon | undefined {
-  return SIMULATOR_WEAPONS.find((w) => w.id === id);
+  return getWeaponFromDatabase(id, SIMULATOR_WEAPONS);
 }

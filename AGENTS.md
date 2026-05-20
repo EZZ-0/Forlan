@@ -43,3 +43,16 @@ The orchestrator will:
 ## Per-Agent Prompts
 
 See Section 5 of the merged plan for copy-paste agent prompts.
+
+## Competitive parity & one-stop shop (Waves 0–5)
+
+**Plan:** [.cursor/plans/ds2_competitive_parity.plan.md](.cursor/plans/ds2_competitive_parity.plan.md)
+
+- **Waves 0–4**: Data, filters, NG/collection, interconnection, full tagging — on **current UI shell**
+- **Wave 5**: Full UI rework **after** Wave 4 exit criteria (feature freeze)
+- **Product rule (strict)**: Build in-engine equivalents for external planners, wikis, and cheat sheets — see **Capability Parity Register** in plan
+- **Governance**: Assess → discuss with user → **`Approve Wave N execution`** or **`Approve CPR-XXX`** — no implementation without approval
+- Assessment only: **“Assess Wave N / CPR-XXX”**
+- **User decisions (2026-05-19)**: Wave 3 subset sim OK → full DB Wave 6A; full world map Wave 6B; sheet import Wave 2 design + 6C; combat tiers + absorption %; bullet boss tips; timer Wave 6E; strip wiki UI Wave 5
+
+Initiate with: **“Approve Wave N execution”** (N = 0–5) or **“Approve Parity Sprint 6A execution”**.
